@@ -270,11 +270,8 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '''   recent build actions, such as the WPF build actions, that weren't available in the original enumeration.
         ''' </remarks>
         Public Shared Sub SetBuildActionAsString(item As ProjectItem, buildAction As String)
-
             Dim BuildActionProperty As [Property] = GetProjectItemProperty(item, s_PROJECTPROPERTY_MSBUILD_ITEMTYPE)
-            If BuildActionProperty IsNot Nothing Then
-                BuildActionProperty.Value = buildAction
-            End If
+            If BuildActionProperty IsNot Nothing Then BuildActionProperty.Value = buildAction
         End Sub
 
         ''' <summary>
@@ -285,11 +282,8 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <remarks></remarks>
         Public Shared Function GetBuildActionAsString(Item As ProjectItem) As String
             Dim BuildActionProperty As [Property] = GetProjectItemProperty(Item, s_PROJECTPROPERTY_MSBUILD_ITEMTYPE)
-            If BuildActionProperty IsNot Nothing Then
-                Return CType(BuildActionProperty.Value, String)
-            End If
-
-            Return String.Empty
+            If BuildActionProperty Is Nothing Then Return String.Empty
+            Return CType(BuildActionProperty.Value, String)
         End Function
 
         ''' ;FindProjectItem
@@ -299,14 +293,11 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' </summary>
         Public Shared Function FindProjectItem(projectItems As ProjectItems, fileName As String) As ProjectItem
             For Each projectItem As ProjectItem In projectItems
-                If projectItem.Kind.Equals( _
-                    EnvDTE.Constants.vsProjectItemKindPhysicalFile, StringComparison.OrdinalIgnoreCase) AndAlso _
-                    projectItem.FileCount > 0 Then
+                If projectItem.Kind.Equals(EnvDTE.Constants.vsProjectItemKindPhysicalFile, StringComparison.OrdinalIgnoreCase) AndAlso
+                   (projectItem.FileCount > 0) Then
 
                     Dim itemFileName As String = Path.GetFileName(projectItem.FileNames(1))
-                    If String.Compare(fileName, itemFileName, StringComparison.OrdinalIgnoreCase) = 0 Then
-                        Return projectItem
-                    End If
+                    If String.Compare(fileName, itemFileName, StringComparison.OrdinalIgnoreCase) = 0 Then Return projectItem
                 End If
             Next
 
