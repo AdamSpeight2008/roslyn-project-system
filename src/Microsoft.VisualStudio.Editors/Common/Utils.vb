@@ -298,7 +298,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <remarks></remarks>
         Public Function DebugToString(Value As Object) As String
 #If DEBUG Then
-            Dim StringValue As String = ""
+            Dim StringValue As String = String.Empty
             Try
                 If Value Is Nothing Then
                     Return "<Nothing>"
@@ -306,7 +306,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                     Return """" & CStr(Value) & """"
                 ElseIf TypeOf Value Is Control Then
                     Dim c As Control = DirectCast(Value, Control)
-                    If c.Name <> "" Then
+                    If c.Name <> String.Empty Then
                         Return c.Name & " (Text=""" & c.Text & """)"
                     Else
                         Return "[" & c.GetType.Name & "] (Text=""" & c.Text & """)"
@@ -318,7 +318,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                 Return "[" & ex.GetType.Name & "]"
             End Try
 #Else
-            Return ""
+            Return String.Empty
 #End If
         End Function
 
@@ -427,11 +427,11 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' Handles values of Nothing, never returns Nothing.
         ''' </remarks>
         Public Function CombineNamespaces(Namespace1 As String, Namespace2 As String) As String
-            If Namespace1 = "" Then
+            If Namespace1 = String.Empty Then
                 Return NothingToEmptyString(Namespace2)
             End If
 
-            If Namespace2 = "" Then
+            If Namespace2 = String.Empty Then
                 Return Namespace1
             End If
 
@@ -447,10 +447,10 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <returns></returns>
         ''' <remarks>Handles values of Nothing, never returns Nothing.</remarks>
         Public Function AddNamespace([Namespace] As String, ClassName As String) As String
-            If ClassName = "" Then
+            If ClassName = String.Empty Then
                 'If class name is missing, then namespace + class name must also be missing.
-                Return ""
-            ElseIf [Namespace] <> "" Then
+                Return String.Empty
+            ElseIf [Namespace] <> String.Empty Then
                 Return [Namespace] & "." & ClassName
             Else
                 Return NothingToEmptyString(ClassName)
@@ -471,13 +471,13 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Dim RootNamespaceLength As Integer = 0
 
             If RootNamespace Is Nothing Then
-                RootNamespace = ""
+                RootNamespace = String.Empty
             End If
             If FullyQualifiedNamespace Is Nothing Then
-                FullyQualifiedNamespace = ""
+                FullyQualifiedNamespace = String.Empty
             End If
 
-            If RootNamespace <> "" Then
+            If RootNamespace <> String.Empty Then
                 'Append period for comparison check
                 RootNamespace = RootNamespace & "."
                 RootNamespaceLength = RootNamespace.Length
@@ -571,7 +571,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Dim CombinedFilter As New StringBuilder
 
             For Each Filter As String In Filters
-                If Filter <> "" Then
+                If Filter <> String.Empty Then
                     If CombinedFilter.Length <> 0 Then
                         CombinedFilter.Append("|")
                     End If
@@ -640,9 +640,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Dim MaxEntryWidth As Integer = 0
             Using g As Graphics = ctrl.CreateGraphics()
                 For Each Entry As Object In items
-                    Dim EntryText As String = ""
+                    Dim EntryText As String = String.Empty
                     If Entry Is Nothing Then
-                        EntryText = ""
+                        EntryText = String.Empty
                     ElseIf TypeOf Entry Is String Then
                         EntryText = DirectCast(Entry, String)
                     Else
@@ -664,7 +664,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <returns></returns>
         ''' <remarks></remarks>
         Friend Function AppendBackslash(Path As String) As String
-            If Path <> "" AndAlso VB.Right(Path, 1) <> IO.Path.DirectorySeparatorChar AndAlso VB.Right(Path, 1) <> IO.Path.AltDirectorySeparatorChar Then
+            If Path <> String.Empty AndAlso VB.Right(Path, 1) <> IO.Path.DirectorySeparatorChar AndAlso VB.Right(Path, 1) <> IO.Path.AltDirectorySeparatorChar Then
                 Return Path & IO.Path.DirectorySeparatorChar
             Else
                 Return Path
@@ -696,7 +696,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Dim fileNames As New ArrayList()
 
             InitialDirectory = NormalizeInitialDirectory(InitialDirectory)
-            If InitialDirectory = "" Then
+            If InitialDirectory = String.Empty Then
                 InitialDirectory = Nothing
             End If
 
@@ -782,7 +782,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         Private Function NormalizeInitialDirectory(InitialDirectory As String) As String
             If InitialDirectory IsNot Nothing Then
                 InitialDirectory = Trim(InitialDirectory)
-                If InitialDirectory = "" Then
+                If InitialDirectory = String.Empty Then
                     InitialDirectory = String.Empty
                 Else
                     Try
@@ -1191,7 +1191,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '@ <remarks></remarks>
         Friend Function GeneratedCodeNamespace(Hierarchy As IVsHierarchy, ItemId As UInteger, IncludeRootNamespace As Boolean, SupportCustomToolNamespace As Boolean) As String
             ' Try to get the root namespace property (if VB)
-            Dim RootNamespace As String = ""
+            Dim RootNamespace As String = String.Empty
             If IsVbProject(Hierarchy) Then
                 Dim Project As EnvDTE.Project = DTEUtils.EnvDTEProject(Hierarchy)
                 If Project IsNot Nothing Then
@@ -1207,12 +1207,12 @@ Namespace Microsoft.VisualStudio.Editors.Common
                 End If
             End If
 
-            Debug.Assert(RootNamespace = "" OrElse IsVbProject(Hierarchy), "Only VB projects should have a root namespace property!")
+            Debug.Assert(RootNamespace = String.Empty OrElse IsVbProject(Hierarchy), "Only VB projects should have a root namespace property!")
 
 
-            Dim CustomToolNamespace As String = ""
+            Dim CustomToolNamespace As String = String.Empty
             Dim objDefaultNamespace As Object = Nothing
-            Dim DefaultNamespace As String = ""
+            Dim DefaultNamespace As String = String.Empty
             Try
                 If ItemId = VSConstants.VSITEMID_ROOT Then
                     ' Support VSITEMID_ROOT, get the default namespace of the project
@@ -1233,7 +1233,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                             End Try
                         End If
 
-                        If prop IsNot Nothing AndAlso CStr(prop.Value) <> "" Then
+                        If prop IsNot Nothing AndAlso CStr(prop.Value) <> String.Empty Then
                             CustomToolNamespace = DesignerFramework.DesignUtil.GenerateValidLanguageIndependentNamespace(CStr(prop.Value))
                         Else
                             VSErrorHandler.ThrowOnFailure(Hierarchy.GetProperty(ItemId, __VSHPROPID.VSHPROPID_DefaultNamespace, objDefaultNamespace))
@@ -1250,8 +1250,8 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
             ' If we have a custom tool namespace, then we will return this unless we also have a root namespace (VB only)
             ' and we are to include the root namespace in the returned value...
-            If CustomToolNamespace <> "" Then
-                If RootNamespace <> "" AndAlso IncludeRootNamespace Then
+            If CustomToolNamespace <> String.Empty Then
+                If RootNamespace <> String.Empty AndAlso IncludeRootNamespace Then
                     Return String.Concat(RootNamespace, ".", CustomToolNamespace)
                 Else
                     Return CustomToolNamespace
@@ -1259,7 +1259,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
             End If
 
             ' No custom tool namespace set - we need to get the default namespace
-            Debug.Assert(CustomToolNamespace = "", "We should have used the CustomToolNamespace if set!")
+            Debug.Assert(CustomToolNamespace = String.Empty, "We should have used the CustomToolNamespace if set!")
 
             ' If we shouldn't include the root namespace, then we will strip it off from the default namespace...
             If Not IncludeRootNamespace Then
@@ -1267,7 +1267,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                 ' we better check to see if we can find one, and if so, remove it from the start of the
                 ' generated namespace....
                 Try
-                    If RootNamespace <> "" AndAlso DefaultNamespace.StartsWith(RootNamespace, StringComparison.Ordinal) Then
+                    If RootNamespace <> String.Empty AndAlso DefaultNamespace.StartsWith(RootNamespace, StringComparison.Ordinal) Then
                         If DefaultNamespace.Length > RootNamespace.Length Then
                             ' If the generated namespace name is longer than the rootnamespace, then it 
                             ' should be <rootnamespace>.<rest.of.the.namespace>
@@ -1278,7 +1278,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                             ' If the length of the root namespace is equal to the length of the generated namespace
                             ' they've got to be equal (remember, we already checked that the generated namespace begins with
                             ' the root namespace, right!)
-                            DefaultNamespace = ""
+                            DefaultNamespace = String.Empty
                         End If
                     End If
                 Catch ex As System.ArgumentException
@@ -1514,7 +1514,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <returns></returns>
         ''' <remarks></remarks>
         Public Function NormalizeLineEndings(text As String) As String
-            If text = "" Then
+            If text = String.Empty Then
                 Return text
             End If
 

@@ -111,7 +111,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <returns></returns>
         ''' <remarks></remarks>
         Friend Shared Function GetDefaultCaption(sp As IServiceProvider) As String
-            Dim caption As String = ""
+            Dim caption As String = String.Empty
             Dim uiShell As Microsoft.VisualStudio.Shell.Interop.IVsUIShell = Nothing
             If sp IsNot Nothing Then
                 uiShell = DirectCast(sp.GetService(GetType(Microsoft.VisualStudio.Shell.Interop.IVsUIShell)), Microsoft.VisualStudio.Shell.Interop.IVsUIShell)
@@ -249,7 +249,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <returns></returns>
         ''' <remarks></remarks>
         Friend Shared Function GenerateValidLanguageIndependentNamespace(value As String) As String
-            If value = "" Then
+            If value = String.Empty Then
                 Return value
             Else
                 Dim subStrings() As String = value.Split(New Char() {"."c})

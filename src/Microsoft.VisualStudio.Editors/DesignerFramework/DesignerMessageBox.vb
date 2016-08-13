@@ -81,13 +81,13 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 Return
             End If
 
-            If HelpLink = "" AndAlso ex IsNot Nothing Then
+            If HelpLink = String.Empty AndAlso ex IsNot Nothing Then
                 HelpLink = ex.HelpLink
             End If
 
             'Add the exception text to the message
             If ex IsNot Nothing Then
-                If Message = "" Then
+                If Message = String.Empty Then
                     Message = ex.Message
                 Else
                     Message = Message & vbCrLf & ex.Message
@@ -98,7 +98,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                     Message = Message.Substring(0, s_maxErrorMessageLength)
                 End If
             Else
-                Debug.Assert(Message <> "")
+                Debug.Assert(Message <> String.Empty)
             End If
 
             Show(ServiceProvider, Message, Caption, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, HelpLink)
@@ -142,12 +142,12 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 Optional HelpLink As String = Nothing _
         ) As DialogResult
 
-            If HelpLink = "" Then
+            If HelpLink = String.Empty Then
                 'Giving an empty string will show the Help button, we don't want it. Null won't.
                 HelpLink = Nothing
             End If
 
-            If Caption = "" Then
+            If Caption = String.Empty Then
                 Caption = Nothing 'Causes "Error" to be the caption...
             End If
 
@@ -266,7 +266,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         '   True if the string is empty string or only contains spaces. Otherwise false.
         '**************************************************************************
         Private Shared Function EmptyOrSpace(Str As String) As Boolean
-            Return Str = "" OrElse Str.Trim.Length <= 0
+            Return Str = String.Empty OrElse Str.Trim.Length <= 0
         End Function
 
     End Class 'DesignerMessageBox 

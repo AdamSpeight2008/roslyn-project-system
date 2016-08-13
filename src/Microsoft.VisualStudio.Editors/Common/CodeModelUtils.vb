@@ -63,7 +63,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                     Dim Func As CodeFunction = DirectCast(element, CodeFunction)
                     If Func.FunctionKind = vsCMFunction.vsCMFunctionSub Then
                         'Check the name
-                        If EventHandlerFunctionName <> "" AndAlso Not String.Equals(Func.Name, EventHandlerFunctionName, StringComparison.OrdinalIgnoreCase) Then
+                        If EventHandlerFunctionName <> String.Empty AndAlso Not String.Equals(Func.Name, EventHandlerFunctionName, StringComparison.OrdinalIgnoreCase) Then
                             Continue For
                         End If
 

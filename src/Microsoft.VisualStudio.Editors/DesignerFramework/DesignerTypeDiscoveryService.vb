@@ -122,7 +122,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                             Dim url As String = Nothing
                             VSErrorHandler.ThrowOnFailure(output.get_DeploySourceURL(url))
 
-                            If url <> "" Then
+                            If url <> String.Empty Then
                                 Return New String() {GetLocalPathUnescaped(url)}
                             End If
                         End If

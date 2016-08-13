@@ -219,7 +219,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
 
                 GeneratedType.Members.Add(Constructor)
 
-                If MyApplication.MainFormNoRootNS <> "" Then
+                If MyApplication.MainFormNoRootNS <> String.Empty Then
                     'Create OnCreateMainForm override
                     '
                     '  GENERATED CODE:
@@ -245,10 +245,10 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                     If invalidIdentifier Then
                         Dim errorMsg As String = SR.GetString(SR.PPG_Application_InvalidIdentifierStartupForm_1Arg, MyApplication.MainFormNoRootNS)
                         If Not pGenerateProgress Is Nothing Then
-                            VSErrorHandler.ThrowOnFailure(pGenerateProgress.GeneratorError(0, _
-                                                                                           1, _
-                                                                                           SR.GetString(SR.SingleFileGenerator_FailedToGenerateFile_1Arg, errorMsg), _
-                                                                                           0, _
+                            VSErrorHandler.ThrowOnFailure(pGenerateProgress.GeneratorError(0,
+                                                                                           1,
+                                                                                           SR.GetString(SR.SingleFileGenerator_FailedToGenerateFile_1Arg, errorMsg),
+                                                                                           0,
                                                                                            0))
                         Else
                             Throw New ArgumentException(errorMsg)
@@ -264,7 +264,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                     End If
                 End If
 
-                If MyApplication.SplashScreenNoRootNS <> "" Then
+                If MyApplication.SplashScreenNoRootNS <> String.Empty Then
                     'Create OnCreateSplashScreen override
                     '
                     '  GENERATED CODE:
@@ -277,10 +277,10 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                     If Not CodeDomProvider.IsValidIdentifier(MyApplication.SplashScreenNoRootNS) Then
                         Dim errorMsg As String = SR.GetString(SR.PPG_Application_InvalidIdentifierSplashScreenForm_1Arg, MyApplication.SplashScreenNoRootNS)
                         If Not pGenerateProgress Is Nothing Then
-                            VSErrorHandler.ThrowOnFailure(pGenerateProgress.GeneratorError(0, _
-                                                                                           1, _
-                                                                                           SR.GetString(SR.SingleFileGenerator_FailedToGenerateFile_1Arg, errorMsg), _
-                                                                                           0, _
+                            VSErrorHandler.ThrowOnFailure(pGenerateProgress.GeneratorError(0,
+                                                                                           1,
+                                                                                           SR.GetString(SR.SingleFileGenerator_FailedToGenerateFile_1Arg, errorMsg),
+                                                                                           0,
                                                                                            0))
                         Else
                             Throw New ArgumentException(errorMsg)
@@ -374,7 +374,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
             '
             Debug.Assert(FieldName IsNot Nothing)
             If FormNameWithoutRootNamespace Is Nothing Then
-                FormNameWithoutRootNamespace = ""
+                FormNameWithoutRootNamespace = String.Empty
             End If
 
             If RootNamespace Is Nothing Then
@@ -395,7 +395,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
             Dim Hierarchy As IVsHierarchy = DirectCast(GetService(GetType(IVsHierarchy)), IVsHierarchy)
             Debug.Assert(Hierarchy IsNot Nothing, "Failed to get a Hierarchy item for item to generate code from")
             Dim data As MyApplicationData = Nothing
-            If InputString <> "" Then
+            If InputString <> String.Empty Then
                 ' We actually have some contents to deserialize.... 
                 Dim MyApplicationReader As New StringReader(InputString)
                 data = MyApplicationSerializer.Deserialize(MyApplicationReader)

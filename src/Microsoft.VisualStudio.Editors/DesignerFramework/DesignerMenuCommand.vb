@@ -120,7 +120,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             Me._commandCheckedHandler = CommandCheckedHandler
             Me._commandVisibleHandler = CommandVisibleHandler
             Me._alwaysCheckStatus = AlwaysCheckStatus
-            If CommandText <> "" Then
+            If CommandText <> String.Empty Then
                 Me.Text = CommandText
             End If
             Visible = True

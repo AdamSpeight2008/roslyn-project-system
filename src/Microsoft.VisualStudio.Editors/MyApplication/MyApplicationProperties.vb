@@ -495,8 +495,8 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' </remarks>
         Public Property MainForm() As String Implements IVsMyApplicationProperties.MainForm
             Get
-                If _myAppData.MainFormNoRootNS = "" Then
-                    Return ""
+                If _myAppData.MainFormNoRootNS = String.Empty Then
+                    Return String.Empty
                 Else
                     Return AddNamespace(GetRootNamespace(), _myAppData.MainFormNoRootNS)
                 End If
@@ -640,8 +640,8 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' If this property is not currently set to a meaningful value, we return empty string.
         Public Property SplashScreen() As String Implements IVsMyApplicationProperties.SplashScreen
             Get
-                If _myAppData.SplashScreenNoRootNS = "" Then
-                    Return ""
+                If _myAppData.SplashScreenNoRootNS = String.Empty Then
+                    Return String.Empty
                 Else
                     Return AddNamespace(GetRootNamespace(), _myAppData.SplashScreenNoRootNS)
                 End If
@@ -1194,7 +1194,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
             End If
 
             Debug.Fail("Unable to get project's root namespace inside MyApplicationProperties")
-            Return ""
+            Return String.Empty
         End Function
 
 
@@ -1382,13 +1382,13 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                         Return ApplicationTypes.CommandLineApp
                     ElseIf Const_MyType_Windows.Equals(MyType, StringComparison.OrdinalIgnoreCase) Then
                         'Backwards compat with earlier projects
-                        'Disable until templates are changed: Debug.Fail("MyType value for a Console application has changed - please update MyType in the project file to be ""Console""")
+                        'Disable until templates are changed: Debug.Fail("MyType value for a Console application has changed - please update MyType in the project file to be String.EmptyConsoleString.Empty")
                         Return ApplicationTypes.CommandLineApp
                         'End Backwards compat
                     Else
                         'Default if anything else to CommandLineApp
                         If Switches.PDApplicationType.Level >= TraceLevel.Warning Then
-                            Debug.Assert(MyType = "" OrElse MyType.Equals(Const_MyType_Empty, StringComparison.OrdinalIgnoreCase) OrElse MyType.Equals(Const_MyType_Custom, StringComparison.OrdinalIgnoreCase), "Unrecognized MyType value in use with the Application property page")
+                            Debug.Assert(MyType = String.Empty OrElse MyType.Equals(Const_MyType_Empty, StringComparison.OrdinalIgnoreCase) OrElse MyType.Equals(Const_MyType_Custom, StringComparison.OrdinalIgnoreCase), "Unrecognized MyType value in use with the Application property page")
                         End If
                         Return ApplicationTypes.CommandLineApp
                     End If
@@ -1403,13 +1403,13 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                         Return ApplicationTypes.WindowsService
                     ElseIf Const_MyType_Windows.Equals(MyType, StringComparison.OrdinalIgnoreCase) Then
                         'Backwards compat with earlier projects
-                        'Disable until templates are changed: Debug.Fail("MyType value for a Windows Service application has changed - please update MyType in the project file to be ""Console""")
+                        'Disable until templates are changed: Debug.Fail("MyType value for a Windows Service application has changed - please update MyType in the project file to be String.EmptyConsoleString.Empty")
                         Return ApplicationTypes.WindowsService
                         'End Backwards compat
                     Else
                         'Default if anything else to WindowsApp
                         If Switches.PDApplicationType.Level >= TraceLevel.Warning Then
-                            Debug.Assert(MyType = "" OrElse MyType.Equals(Const_MyType_Empty, StringComparison.OrdinalIgnoreCase) OrElse MyType.Equals(Const_MyType_Custom, StringComparison.OrdinalIgnoreCase), "Unrecognized MyType value in use with the Application property page")
+                            Debug.Assert(MyType = String.Empty OrElse MyType.Equals(Const_MyType_Empty, StringComparison.OrdinalIgnoreCase) OrElse MyType.Equals(Const_MyType_Custom, StringComparison.OrdinalIgnoreCase), "Unrecognized MyType value in use with the Application property page")
                         End If
                         Return ApplicationTypes.WindowsApp
                     End If
@@ -1422,7 +1422,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                     Else
                         'Default if anything else to WindowsClassLib
                         If Switches.PDApplicationType.Level >= TraceLevel.Warning Then
-                            Debug.Assert(MyType = "" OrElse MyType.Equals(Const_MyType_Empty, StringComparison.OrdinalIgnoreCase) OrElse MyType.Equals(Const_MyType_Custom, StringComparison.OrdinalIgnoreCase), "Unrecognized MyType value in use with the Application property page")
+                            Debug.Assert(MyType = String.Empty OrElse MyType.Equals(Const_MyType_Empty, StringComparison.OrdinalIgnoreCase) OrElse MyType.Equals(Const_MyType_Custom, StringComparison.OrdinalIgnoreCase), "Unrecognized MyType value in use with the Application property page")
                         End If
                         Return ApplicationTypes.WindowsClassLib
                     End If

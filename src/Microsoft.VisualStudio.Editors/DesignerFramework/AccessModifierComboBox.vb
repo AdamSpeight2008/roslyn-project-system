@@ -485,7 +485,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
 
                     If ToolNamespaceProperty IsNot Nothing _
                     AndAlso _namespaceToOverrideIfCustomToolIsEmpty IsNot Nothing _
-                    AndAlso previousToolValue = "" Then
+                    AndAlso previousToolValue = String.Empty Then
                         ' This is currently used for the VB scenario - if the custom tool has been yet been set, and
                         '   the user turns on code generation, we want to also set the custom tool namespace to the
                         '   default for VB (My.Resources).
@@ -557,7 +557,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             '  it and won't easily be able to get back the original value.  This is an advanced 
             '  scenario, and the advanced user can change this value directly in the property sheet
             '  if really needed.
-            If customToolValue <> "" AndAlso Not _recognizedCustomToolValues.Contains(customToolValue) Then
+            If customToolValue <> String.Empty AndAlso Not _recognizedCustomToolValues.Contains(customToolValue) Then
                 Return False
             End If
 

@@ -388,7 +388,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         Public Function GetEditorCaption(Status As EditorCaptionState) As String
             Dim Caption As String = _baseEditorCaption
             If Caption Is Nothing Then
-                Caption = ""
+                Caption = String.Empty
             End If
 
             If Status = EditorCaptionState.AutoDetect Then

@@ -159,7 +159,7 @@ Namespace Microsoft.Internal.Performance
             Using key As RegistryKey = hKey.OpenSubKey(strRegRoot & "\Performance")
                 If Not key Is Nothing Then
                     ' reads the default value
-                    str = key.GetValue("").ToString()
+                    str = key.GetValue(String.Empty).ToString()
                 End If
             End Using
             Return str

@@ -95,7 +95,7 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
             Dim DisplayName As String = Nothing
 
             VSErrorHandler.ThrowOnFailure(Config.get_DisplayName(DisplayName))
-            Debug.Assert(DisplayName IsNot Nothing AndAlso DisplayName <> "")
+            Debug.Assert(DisplayName IsNot Nothing AndAlso DisplayName <> String.Empty)
 
             'The configuration name and platform name are separated by a vertical bar.  The configuration
             '  part is the only portion that is user-defined.  Although the shell doesn't allow vertical bar
@@ -112,7 +112,7 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
                 PlatformName = DisplayName.Substring(IndexOfBar + 1)
             End If
 
-            Debug.Assert(ConfigName <> "" AndAlso PlatformName <> "")
+            Debug.Assert(ConfigName <> String.Empty AndAlso PlatformName <> String.Empty)
         End Sub
 
 
@@ -343,7 +343,7 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
                     aggregatableProject.GetAggregateProjectTypeGuids(guidStrings)
 
                     For Each guidString As String In guidStrings.Split(New Char() {";"c})
-                        If guidString <> "" Then
+                        If guidString <> String.Empty Then
                             ' Insert Guid to the front
                             Try
                                 Dim flavorGuid As New Guid(guidString)
@@ -400,7 +400,7 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
                     aggregatableProject.GetAggregateProjectTypeGuids(guidStrings)
 
                     For Each guidString As String In guidStrings.Split(New Char() {";"c})
-                        If guidString <> "" Then
+                        If guidString <> String.Empty Then
                             ' Insert Guid to the front
                             Try
                                 Dim flavorGuid As New Guid(guidString)
@@ -503,7 +503,7 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
 
             Dim result As New List(Of String)
 
-            If projectitem IsNot Nothing AndAlso projectitem.Name <> "" Then
+            If projectitem IsNot Nothing AndAlso projectitem.Name <> String.Empty Then
                 result.Add(DTEUtils.FileNameFromProjectItem(projectitem))
             End If
 

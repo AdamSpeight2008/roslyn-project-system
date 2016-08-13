@@ -372,7 +372,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                     End If
                 End If
 
-                If _objectName = "" Then
+                If _objectName = String.Empty Then
                     ' We better create a unique name for this guy...
                     _objectName = Guid.NewGuid.ToString().Replace("-", "_")
                 End If
@@ -497,7 +497,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             ''' <remarks></remarks>
             Friend ReadOnly Property IsEntireObject() As Boolean
                 Get
-                    Return _propertyName = ""
+                    Return _propertyName = String.Empty
                 End Get
             End Property
 

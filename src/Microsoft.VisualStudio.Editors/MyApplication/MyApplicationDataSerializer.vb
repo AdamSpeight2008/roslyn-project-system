@@ -25,16 +25,16 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
             EscapeName = True
             WriteStartElement(n, ns, o)
             If needType Then
-                WriteXsiType("MyApplicationData", "")
+                WriteXsiType("MyApplicationData", String.Empty)
             End If
-            WriteElementStringRaw("MySubMain", "", System.Xml.XmlConvert.ToString(CType(o.MySubMain, System.Boolean)))
-            WriteElementString("MainForm", "", o.MainFormNoRootNS)
-            WriteElementStringRaw("SingleInstance", "", System.Xml.XmlConvert.ToString(CType(o.SingleInstance, System.Boolean)))
-            WriteElementStringRaw("ShutdownMode", "", System.Xml.XmlConvert.ToString(CType(o.ShutdownMode, System.Int32)))
-            WriteElementStringRaw("EnableVisualStyles", "", System.Xml.XmlConvert.ToString(CType(o.EnableVisualStyles, System.Boolean)))
-            WriteElementStringRaw("AuthenticationMode", "", System.Xml.XmlConvert.ToString(CType(o.AuthenticationMode, System.Int32)))
-            WriteElementString("SplashScreen", "", o.SplashScreenNoRootNS)
-            WriteElementStringRaw("SaveMySettingsOnExit", "", System.Xml.XmlConvert.ToString(CType(o.SaveMySettingsOnExit, System.Boolean)))
+            WriteElementStringRaw("MySubMain", String.Empty, System.Xml.XmlConvert.ToString(CType(o.MySubMain, System.Boolean)))
+            WriteElementString("MainForm", String.Empty, o.MainFormNoRootNS)
+            WriteElementStringRaw("SingleInstance", String.Empty, System.Xml.XmlConvert.ToString(CType(o.SingleInstance, System.Boolean)))
+            WriteElementStringRaw("ShutdownMode", String.Empty, System.Xml.XmlConvert.ToString(CType(o.ShutdownMode, System.Int32)))
+            WriteElementStringRaw("EnableVisualStyles", String.Empty, System.Xml.XmlConvert.ToString(CType(o.EnableVisualStyles, System.Boolean)))
+            WriteElementStringRaw("AuthenticationMode", String.Empty, System.Xml.XmlConvert.ToString(CType(o.AuthenticationMode, System.Int32)))
+            WriteElementString("SplashScreen", String.Empty, o.SplashScreenNoRootNS)
+            WriteElementStringRaw("SaveMySettingsOnExit", String.Empty, System.Xml.XmlConvert.ToString(CType(o.SaveMySettingsOnExit, System.Boolean)))
             WriteEndElement(o)
         End Sub 'Write2_MyApplicationData
 
@@ -46,11 +46,11 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         Public Sub Write3_MyApplicationData(o As Object)
             WriteStartDocument()
             If o Is Nothing Then
-                WriteNullTagLiteral("MyApplicationData", "")
+                WriteNullTagLiteral("MyApplicationData", String.Empty)
                 Return
             End If
             TopLevelElement()
-            Write2_MyApplicationData("MyApplicationData", "", CType(o, Microsoft.VisualStudio.Editors.MyApplication.MyApplicationData), True, False)
+            Write2_MyApplicationData("MyApplicationData", String.Empty, CType(o, Microsoft.VisualStudio.Editors.MyApplication.MyApplicationData), True, False)
         End Sub 'Write3_MyApplicationData 
 
         Private _publicMethods As System.Collections.Hashtable = Nothing
@@ -224,7 +224,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
 
             _id3_MySubMain = Reader.NameTable.Add("MySubMain")
 
-            _id2_Item = Reader.NameTable.Add("")
+            _id2_Item = Reader.NameTable.Add(String.Empty)
 
             _id7_EnableVisualStyles = Reader.NameTable.Add("EnableVisualStyles")
 
@@ -259,7 +259,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
 
 
         Public Overrides Function CanDeserialize(xmlReader As System.Xml.XmlReader) As Boolean
-            Return xmlReader.IsStartElement("MyApplicationData", "")
+            Return xmlReader.IsStartElement("MyApplicationData", String.Empty)
         End Function 'CanDeserialize
 
 

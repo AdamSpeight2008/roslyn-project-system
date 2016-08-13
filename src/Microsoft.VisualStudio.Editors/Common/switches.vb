@@ -420,7 +420,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Return ts.TotalSeconds.ToString("0000.00000") & VB.vbTab
             'Return n.ToString("hh:mm:ss.") & Microsoft.VisualBasic.Format(n.Millisecond, "000") & VB.vbTab
 #Else
-            Return ""
+            Return String.Empty
 #End If
         End Function
 
@@ -455,7 +455,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
             ''' <remarks></remarks>
             Public ReadOnly Property ValueDefined() As Boolean
                 Get
-                    Return MyBase.Value <> "" AndAlso CInt(System.Convert.ChangeType(Me.Value, TypeCode.Int32)) <> 0
+                    Return MyBase.Value <> String.Empty AndAlso CInt(System.Convert.ChangeType(Me.Value, TypeCode.Int32)) <> 0
                 End Get
             End Property
 
