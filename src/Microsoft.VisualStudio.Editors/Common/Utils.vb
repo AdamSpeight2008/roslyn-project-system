@@ -1238,9 +1238,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <return></return>
         ''' <remarks></remarks>
         Private Function IsWCFReferenceValidInProject(Hierarchy As IVsHierarchy) As Boolean
-            If Hierarchy Is Nothing Then
-                Throw New ArgumentNullException("Hierarchy")
-            End If
+            If Hierarchy Is Nothing Then Throw New ArgumentNullException(NameOf(Hierarchy))
 
             If TryCast(Hierarchy, Microsoft.VisualStudio.WCFReference.Interop.IVsWCFMetadataStorageProvider) IsNot Nothing Then
                 Dim objIsServiceReferenceSupported As Object = Nothing
@@ -1269,9 +1267,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <return></return>
         ''' <remarks></remarks>
         Friend Function IsWebReferenceSupportedByDefaultInProject(Hierarchy As IVsHierarchy) As Boolean
-            If Hierarchy Is Nothing Then
-                Throw New ArgumentNullException(NameOf(Hierarchy))
-            End If
+            If Hierarchy Is Nothing Then Throw New ArgumentNullException(NameOf(Hierarchy))
 
             Dim objIsReferenceSupported As Object = Nothing
             Try
@@ -1293,16 +1289,11 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <returns></returns>
         ''' <remarks></remarks>
         Friend Function IsVbProject(Hierarchy As IVsHierarchy) As Boolean
-            If Hierarchy Is Nothing Then
-                Throw New ArgumentNullException(NameOf(Hierarchy))
-            End If
-
+            If Hierarchy Is Nothing Then Throw New ArgumentNullException(NameOf(Hierarchy))
             Dim langService As Guid = Guid.Empty
             Try
                 VSErrorHandler.ThrowOnFailure(Hierarchy.GetGuidProperty(VSITEMID.ROOT, CInt(__VSHPROPID.VSHPROPID_PreferredLanguageSID), langService))
-                If Not langService = Guid.Empty Then
-                    Return langService.Equals(New Guid("{E34ACDC0-BAAE-11D0-88BF-00A0C9110049}"))
-                End If
+                If langService <> Guid.Empty Then Return langService.Equals(New Guid("{E34ACDC0-BAAE-11D0-88BF-00A0C9110049}"))
             Catch ex As Exception When Utils.ReportWithoutCrash(ex, NameOf(IsVbProject), NameOf(Utils))
             End Try
             Return False
@@ -1403,9 +1394,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
             ''' <remarks></remarks>
             Friend Shared Function PageGuidToId(guid As Guid) As Byte
                 For i As Integer = 0 To s_sqmOrder.Length - 1
-                    If s_sqmOrder(i).Equals(guid) Then
-                        Return CByte(i + 1)
-                    End If
+                    If s_sqmOrder(i).Equals(guid) Then Return CByte(i + 1)
                 Next
                 Return UNKNOWN_PAGE
             End Function
@@ -1451,9 +1440,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <returns></returns>
         ''' <remarks></remarks>
         Public Function NormalizeLineEndings(text As String) As String
-            If text = String.Empty Then
-                Return text
-            End If
+            If text = String.Empty Then Return text
 
             Dim sb As New StringBuilder(text.Length)
 
@@ -1501,24 +1488,16 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
             Dim propertyValue As Object = Nothing
 
-            If VSErrorHandler.Failed(hierarchy.GetProperty(VSITEMID.ROOT, __VSHPROPID4.VSHPROPID_TargetFrameworkMoniker, propertyValue)) Then
-                Return False
-            End If
+            If VSErrorHandler.Failed(hierarchy.GetProperty(VSITEMID.ROOT, __VSHPROPID4.VSHPROPID_TargetFrameworkMoniker, propertyValue)) Then Return False
 
-            If propertyValue Is Nothing Then
-                Return False
-            End If
+            If propertyValue Is Nothing Then Return False
 
-            If Not TypeOf propertyValue Is String Then
-                Return False
-            End If
+            If Not TypeOf propertyValue Is String Then Return False
 
             Dim frameworkName As New FrameworkName(CStr(propertyValue))
 
             ' Verify that we are targeting .NET
-            If String.Compare(frameworkName.Identifier, ".NETFramework", StringComparison.OrdinalIgnoreCase) <> 0 Then
-                Return False
-            End If
+            If String.Compare(frameworkName.Identifier, ".NETFramework", StringComparison.OrdinalIgnoreCase) <> 0 Then Return False
 
             ' Verify that the version of the target framework is >= 4.5
             Return frameworkName.Version.Major > 4 OrElse
@@ -1535,19 +1514,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
         Friend Function IsAppContainerProject(hierarchy As IVsHierarchy) As Boolean
 
             Dim propertyValue As Object = Nothing
-
-            If VSErrorHandler.Failed(hierarchy.GetProperty(VSITEMID.ROOT, __VSHPROPID5.VSHPROPID_AppContainer, propertyValue)) Then
-                Return False
-            End If
-
-            If propertyValue Is Nothing Then
-                Return False
-            End If
-
-            If Not TypeOf propertyValue Is Boolean Then
-                Return False
-            End If
-
+            If VSErrorHandler.Failed(hierarchy.GetProperty(VSITEMID.ROOT, __VSHPROPID5.VSHPROPID_AppContainer, propertyValue)) Then Return False
+            If propertyValue Is Nothing Then Return False
+            If TypeOf propertyValue IsNot Boolean Then Return False
             Return CBool(propertyValue)
 
         End Function
@@ -1568,9 +1537,8 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Dim Reference3 As VSLangProj80.Reference3
             Try
                 Reference3 = TryCast(Reference, VSLangProj80.Reference3)
-                If Reference3 IsNot Nothing AndAlso Reference3.AutoReferenced Then
-                    Return True
-                End If
+                If Reference3 IsNot Nothing AndAlso Reference3.AutoReferenced Then Return True
+
             Catch ex As Exception When Common.ReportWithoutCrash(ex, NameOf(Reference3) & "." & NameOf(Reference3.AutoReferenced) & " threw an exception", NameOf(Utils))
             End Try
 
