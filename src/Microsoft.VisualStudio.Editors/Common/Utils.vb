@@ -300,11 +300,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
 #If DEBUG Then
             Dim StringValue As String = String.Empty
             Try
-                If Value Is Nothing Then
-                    Return "<Nothing>"
-                ElseIf TypeOf Value Is String Then
-                    Return """" & CStr(Value) & """"
-                ElseIf TypeOf Value Is Control Then
+                If Value Is Nothing Then Return "<Nothing>"
+                If TypeOf Value Is String Then Return """" & CStr(Value) & """"
+                If TypeOf Value Is Control Then
                     Dim c As Control = DirectCast(Value, Control)
                     If c.Name <> String.Empty Then
                         Return c.Name & " (Text=""" & c.Text & """)"
@@ -372,11 +370,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <returns></returns>
         ''' <remarks></remarks>
         Public Function NothingToEmptyString(Str As String) As String
-            If Str Is Nothing Then
-                Return String.Empty
-            Else
-                Return Str
-            End If
+            Return If(Str, String.Empty)
         End Function
 
 
@@ -387,11 +381,8 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <returns></returns>
         ''' <remarks></remarks>
         Public Function EmptyStringToNothing(Str As String) As String
-            If Str Is Nothing OrElse Str.Length = 0 Then
-                Return Nothing
-            Else
-                Return Str
-            End If
+            If (Str Is Nothing) OrElse (Str.Length = 0) Then Return Nothing
+            Return Str
         End Function
 
 
@@ -427,14 +418,8 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' Handles values of Nothing, never returns Nothing.
         ''' </remarks>
         Public Function CombineNamespaces(Namespace1 As String, Namespace2 As String) As String
-            If Namespace1 = String.Empty Then
-                Return NothingToEmptyString(Namespace2)
-            End If
-
-            If Namespace2 = String.Empty Then
-                Return Namespace1
-            End If
-
+            If Namespace1 = String.Empty Then Return NothingToEmptyString(Namespace2)
+            If Namespace2 = String.Empty Then Return Namespace1
             Return Namespace1 & "." & Namespace2
         End Function
 
@@ -447,14 +432,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <returns></returns>
         ''' <remarks>Handles values of Nothing, never returns Nothing.</remarks>
         Public Function AddNamespace([Namespace] As String, ClassName As String) As String
-            If ClassName = String.Empty Then
-                'If class name is missing, then namespace + class name must also be missing.
-                Return String.Empty
-            ElseIf [Namespace] <> String.Empty Then
-                Return [Namespace] & "." & ClassName
-            Else
-                Return NothingToEmptyString(ClassName)
-            End If
+            If ClassName = String.Empty Then Return String.Empty ' If class name is missing, then namespace + class name must also be missing.
+            If [Namespace] <> String.Empty Then Return [Namespace] & "." & ClassName
+            Return NothingToEmptyString(ClassName)
         End Function
 
 
@@ -469,13 +449,8 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <remarks></remarks>
         Public Function RemoveRootNamespace(FullyQualifiedNamespace As String, RootNamespace As String) As String
             Dim RootNamespaceLength As Integer = 0
-
-            If RootNamespace Is Nothing Then
-                RootNamespace = String.Empty
-            End If
-            If FullyQualifiedNamespace Is Nothing Then
-                FullyQualifiedNamespace = String.Empty
-            End If
+            RootNamespace = If(RootNamespace, String.Empty)
+            FullyQualifiedNamespace = If(FullyQualifiedNamespace, String.Empty)
 
             If RootNamespace <> String.Empty Then
                 'Append period for comparison check
@@ -519,29 +494,23 @@ Namespace Microsoft.VisualStudio.Editors.Common
             'Build the user-friendly portion of the filter
             Filter.Append(FilterText & " (")
             For i = 0 To Extensions.Length - 1
-                If i <> 0 Then
-                    Filter.Append(", ")
-                End If
+
+                If i <> 0 Then Filter.Append(", ")
 
                 Dim Extension As String = Extensions(i)
-                Debug.Assert(VB.Left(Extension, 1) <> "*", "Extension should not include the '*'")
-                If VB.Left(Extension, 1) <> "." Then
-                    Extension = "." & Extension
-                End If
+                Debug.Assert(Extension(0) <> "*"c, "Extension should not include the '*'")
+                If Extension(0) <> "."c Then Extension = "." & Extension
                 Filter.Append("*" & Extension)
             Next
 
             'Build the programmatic portion
             Filter.Append(")|")
             For i = 0 To Extensions.Length - 1
-                If i <> 0 Then
-                    Filter.Append(";")
-                End If
+
+                If i <> 0 Then Filter.Append(";")
 
                 Dim Extension As String = Extensions(i)
-                If VB.Left(Extension, 1) <> "." Then
-                    Extension = "." & Extension
-                End If
+                If Extension(0) <> "." Then Extension = "." & Extension
                 Filter.Append("*" & Extension)
             Next
 
@@ -572,9 +541,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
             For Each Filter As String In Filters
                 If Filter <> String.Empty Then
-                    If CombinedFilter.Length <> 0 Then
-                        CombinedFilter.Append("|")
-                    End If
+                    If CombinedFilter.Length <> 0 Then CombinedFilter.Append("|"c)
                     CombinedFilter.Append(Filter)
                 End If
             Next
@@ -592,11 +559,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <returns></returns>
         ''' <remarks></remarks>
         Public Function IIf(Of T)(Condition As Boolean, TrueExpression As T, FalseExpression As T) As T
-            If Condition Then
-                Return TrueExpression
-            Else
-                Return FalseExpression
-            End If
+            Return If(Condition, TrueExpression, FalseExpression)
         End Function
 
 
@@ -639,6 +602,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         Public Function MeasureMaxTextWidth(ctrl As Control, items As IEnumerable) As Integer
             Dim MaxEntryWidth As Integer = 0
             Using g As Graphics = ctrl.CreateGraphics()
+
                 For Each Entry As Object In items
                     Dim EntryText As String = String.Empty
                     If Entry Is Nothing Then
@@ -664,11 +628,13 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <returns></returns>
         ''' <remarks></remarks>
         Friend Function AppendBackslash(Path As String) As String
-            If Path <> String.Empty AndAlso VB.Right(Path, 1) <> IO.Path.DirectorySeparatorChar AndAlso VB.Right(Path, 1) <> IO.Path.AltDirectorySeparatorChar Then
-                Return Path & IO.Path.DirectorySeparatorChar
-            Else
-                Return Path
+            If (Path <> String.Empty) Then
+                Dim r = Path(Path.Length - 1)
+                If r <> IO.Path.DirectorySeparatorChar AndAlso r <> IO.Path.AltDirectorySeparatorChar Then
+                    Return Path & IO.Path.DirectorySeparatorChar
+                End If
             End If
+            Return Path
         End Function
 
         ''' <summary>
@@ -684,11 +650,17 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="NeedThrowError">Throw error when the dialog fails unexpectedly</param>
         ''' <returns>a collection of files</returns>
         ''' <remarks></remarks>
-        Friend Function GetFilesViaBrowse(ServiceProvider As IServiceProvider, ParentWindow As IntPtr,
-                InitialDirectory As String, DialogTitle As String,
-                Filter As String, FilterIndex As UInteger, MutiSelect As Boolean,
-                Optional DefaultFileName As String = Nothing,
-                Optional NeedThrowError As Boolean = False) As ArrayList
+        Friend Function GetFilesViaBrowse(
+                                           ServiceProvider As IServiceProvider,
+                                           ParentWindow As IntPtr,
+                                           InitialDirectory As String,
+                                           DialogTitle As String,
+                                           Filter As String,
+                                           FilterIndex As UInteger,
+                                           MutiSelect As Boolean,
+                                  Optional DefaultFileName As String = Nothing,
+                                  Optional NeedThrowError As Boolean = False
+                                         ) As ArrayList
 
             Dim uishell As Microsoft.VisualStudio.Shell.Interop.IVsUIShell =
                 CType(ServiceProvider.GetService(GetType(Microsoft.VisualStudio.Shell.Interop.IVsUIShell)), Microsoft.VisualStudio.Shell.Interop.IVsUIShell)
@@ -696,45 +668,42 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Dim fileNames As New ArrayList()
 
             InitialDirectory = NormalizeInitialDirectory(InitialDirectory)
-            If InitialDirectory = String.Empty Then
-                InitialDirectory = Nothing
-            End If
+            If InitialDirectory = String.Empty Then InitialDirectory = Nothing
 
             Filter = GetNativeFilter(Filter)
 
             Dim MaxPathName As Integer = Interop.win.MAX_PATH + 1
-            If MutiSelect Then
-                MaxPathName = (Interop.win.MAX_PATH + 1) * s_VSDPLMAXFILES
-            End If
+            If MutiSelect Then MaxPathName = (Interop.win.MAX_PATH + 1) * s_VSDPLMAXFILES
 
             Dim vsOpenFileName As Shell.Interop.VSOPENFILENAMEW()
 
             Dim defaultName(MaxPathName) As Char
-            If DefaultFileName IsNot Nothing Then
-                DefaultFileName.CopyTo(0, defaultName, 0, DefaultFileName.Length)
-            End If
+            If DefaultFileName IsNot Nothing Then DefaultFileName.CopyTo(0, defaultName, 0, DefaultFileName.Length)
 
             Dim stringMemPtr As IntPtr = System.Runtime.InteropServices.Marshal.AllocHGlobal(MaxPathName * 2 + 2)
             System.Runtime.InteropServices.Marshal.Copy(defaultName, 0, stringMemPtr, defaultName.Length)
 
             Try
                 vsOpenFileName = New Shell.Interop.VSOPENFILENAMEW(0) {}
-                vsOpenFileName(0).lStructSize = CUInt(System.Runtime.InteropServices.Marshal.SizeOf(vsOpenFileName(0)))
-                vsOpenFileName(0).hwndOwner = ParentWindow
-                vsOpenFileName(0).pwzDlgTitle = DialogTitle
-                vsOpenFileName(0).nMaxFileName = CUInt(MaxPathName)
-                vsOpenFileName(0).pwzFileName = stringMemPtr
-                vsOpenFileName(0).pwzInitialDir = InitialDirectory
-                vsOpenFileName(0).pwzFilter = Filter
-                vsOpenFileName(0).nFilterIndex = FilterIndex
-                vsOpenFileName(0).nFileOffset = 0
-                vsOpenFileName(0).nFileExtension = 0
-                vsOpenFileName(0).dwHelpTopic = 0
+                Dim first = vsOpenFileName(0)
+                With first
+                    .lStructSize = CUInt(System.Runtime.InteropServices.Marshal.SizeOf(vsOpenFileName(0)))
+                    .hwndOwner = ParentWindow
+                    .pwzDlgTitle = DialogTitle
+                    .nMaxFileName = CUInt(MaxPathName)
+                    .pwzFileName = stringMemPtr
+                    .pwzInitialDir = InitialDirectory
+                    .pwzFilter = Filter
+                    .nFilterIndex = FilterIndex
+                    .nFileOffset = 0
+                    .nFileExtension = 0
+                    .dwHelpTopic = 0
+                End With
 
                 If MutiSelect Then
-                    vsOpenFileName(0).dwFlags = &H200   'OFN_ALLOWMULTISELECT
+                    first.dwFlags = &H200   'OFN_ALLOWMULTISELECT
                 Else
-                    vsOpenFileName(0).dwFlags = 0
+                    first.dwFlags = 0
                 End If
 
                 Dim hr As Integer = uishell.GetOpenFileNameViaDlg(vsOpenFileName)
@@ -743,23 +712,23 @@ Namespace Microsoft.VisualStudio.Editors.Common
                     System.Runtime.InteropServices.Marshal.Copy(stringMemPtr, buffer, 0, buffer.Length)
                     Dim path As String = Nothing
                     Dim i As Integer = 0
+
                     For j As Integer = 0 To buffer.Length - 1
-                        If buffer(j) = Chr(0) Then
-                            If i = j Then
-                                Exit For
-                            End If
-                            If i = 0 Then
-                                path = New String(buffer, 0, j)
-                            Else
-                                fileNames.Add(path & IO.Path.DirectorySeparatorChar & New String(buffer, i, j - i))
-                            End If
-                            i = j + 1
+
+                        If buffer(j) <> Chr(0) Then Continue For
+
+                        If i = j Then Exit For
+                        If i = 0 Then
+                            path = New String(buffer, 0, j)
+                        Else
+                            fileNames.Add(path & IO.Path.DirectorySeparatorChar & New String(buffer, i, j - i))
                         End If
+                        i = j + 1
+
                     Next
 
-                    If fileNames.Count = 0 AndAlso path IsNot Nothing Then
-                        fileNames.Add(path)
-                    End If
+                    If (fileNames.Count = 0) AndAlso (path IsNot Nothing) Then fileNames.Add(path)
+
                 ElseIf NeedThrowError Then
                     If hr = Interop.win.OLE_E_PROMPTSAVECANCELLED Then
                         'We shouldn't thrown error, if User cancelled out of dialog
@@ -782,9 +751,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         Private Function NormalizeInitialDirectory(InitialDirectory As String) As String
             If InitialDirectory IsNot Nothing Then
                 InitialDirectory = Trim(InitialDirectory)
-                If InitialDirectory = String.Empty Then
-                    InitialDirectory = String.Empty
-                Else
+                If InitialDirectory <> String.Empty Then
                     Try
                         'Path needs a backslash at the end, or it will be interpreted as a directory + filename
                         InitialDirectory = Path.GetFullPath(AppendBackslash(InitialDirectory))
@@ -804,20 +771,17 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '@ <param name="Filter">file type filter</param>
         '@ <returns>a native filter string</returns>
         Private Function GetNativeFilter(Filter As String) As String
-            If Filter IsNot Nothing Then
-                Dim length As Integer = Filter.Length
-                Dim buf As Char() = New Char(length) {}
+            If Filter Is Nothing Then Return Filter
 
-                Filter.CopyTo(0, buf, 0, length)
+            Dim length As Integer = Filter.Length
+            Dim buf As Char() = New Char(length) {}
 
-                For i As Integer = 0 To length - 1
-                    If buf(i) = "|"c Then
-                        buf(i) = Chr(0)
-                    End If
-                Next
-                Filter = New String(buf)
-            End If
-            Return Filter
+            Filter.CopyTo(0, buf, 0, length)
+
+            For i As Integer = 0 To length - 1
+                If buf(i) = "|"c Then buf(i) = Chr(0)
+            Next
+            Return New String(buf)
         End Function
 
         '@ <summary>
@@ -832,11 +796,16 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '@ <param name="DefaultFileName">The default file name.</param>
         '@ <param name="OverwritePrompt">If true, Windows will ask the user to overwrite the file if it already exists.</param>
         '@ <returns>The selected file/path, or Nothing if the user canceled.</returns>
-        Friend Function GetNewFileNameViaBrowse(ServiceProvider As IServiceProvider, ParentWindow As IntPtr,
-                InitialDirectory As String, DialogTitle As String,
-                Filter As String, FilterIndex As UInteger,
-                Optional DefaultFileName As String = Nothing,
-                Optional OverwritePrompt As Boolean = False) As String
+        Friend Function GetNewFileNameViaBrowse(
+                                                 ServiceProvider As IServiceProvider,
+                                                 ParentWindow As IntPtr,
+                                                 InitialDirectory As String,
+                                                 DialogTitle As String,
+                                                 Filter As String,
+                                                 FilterIndex As UInteger,
+                                        Optional DefaultFileName As String = Nothing,
+                                        Optional OverwritePrompt As Boolean = False
+                                               ) As String
 
             Dim uishell As Microsoft.VisualStudio.Shell.Interop.IVsUIShell =
                 CType(ServiceProvider.GetService(GetType(Microsoft.VisualStudio.Shell.Interop.IVsUIShell)), Microsoft.VisualStudio.Shell.Interop.IVsUIShell)
@@ -847,9 +816,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Const MAX_PATH_NAME As Integer = 4096
 
             Dim defaultName(MAX_PATH_NAME) As Char
-            If DefaultFileName IsNot Nothing Then
-                DefaultFileName.CopyTo(0, defaultName, 0, DefaultFileName.Length)
-            End If
+            If DefaultFileName IsNot Nothing Then DefaultFileName.CopyTo(0, defaultName, 0, DefaultFileName.Length)
 
             Dim vsSaveFileName As Shell.Interop.VSSAVEFILENAMEW()
             Dim stringMemPtr As IntPtr = System.Runtime.InteropServices.Marshal.AllocHGlobal(MAX_PATH_NAME * 2 + 2)
@@ -857,30 +824,30 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
             Try
                 vsSaveFileName = New Shell.Interop.VSSAVEFILENAMEW(0) {}
-                vsSaveFileName(0).lStructSize = CUInt(System.Runtime.InteropServices.Marshal.SizeOf(vsSaveFileName(0)))
-                vsSaveFileName(0).hwndOwner = ParentWindow
-                vsSaveFileName(0).pwzDlgTitle = DialogTitle
-                vsSaveFileName(0).nMaxFileName = MAX_PATH_NAME
-                vsSaveFileName(0).pwzFileName = stringMemPtr
-                vsSaveFileName(0).pwzInitialDir = InitialDirectory
-                vsSaveFileName(0).pwzFilter = Filter
-                vsSaveFileName(0).nFilterIndex = FilterIndex
-                vsSaveFileName(0).nFileOffset = 0
-                vsSaveFileName(0).nFileExtension = FilterIndex
-                vsSaveFileName(0).dwHelpTopic = 0
-                vsSaveFileName(0).pSaveOpts = Nothing
+                Dim first = vsSaveFileName(0)
+                With first
+                    .lStructSize = CUInt(System.Runtime.InteropServices.Marshal.SizeOf(vsSaveFileName(0)))
+                    .hwndOwner = ParentWindow
+                    .pwzDlgTitle = DialogTitle
+                    .nMaxFileName = MAX_PATH_NAME
+                    .pwzFileName = stringMemPtr
+                    .pwzInitialDir = InitialDirectory
+                    .pwzFilter = Filter
+                    .nFilterIndex = FilterIndex
+                    .nFileOffset = 0
+                    .nFileExtension = FilterIndex
+                    .dwHelpTopic = 0
+                    .pSaveOpts = Nothing
+                End With
 
                 If OverwritePrompt Then
-                    vsSaveFileName(0).dwFlags = &H2   'OFN_OVERWRITEPROMPT
+                    first.dwFlags = &H2   'OFN_OVERWRITEPROMPT
                 Else
-                    vsSaveFileName(0).dwFlags = 0
+                    first.dwFlags = 0
                 End If
 
                 Dim hr As Integer = uishell.GetSaveFileNameViaDlg(vsSaveFileName)
-                If VSErrorHandler.Succeeded(hr) Then
-                    Dim sFileName As String = System.Runtime.InteropServices.Marshal.PtrToStringUni(stringMemPtr)
-                    Return sFileName
-                End If
+                If VSErrorHandler.Succeeded(hr) Then Return System.Runtime.InteropServices.Marshal.PtrToStringUni(stringMemPtr)
 
             Finally
                 System.Runtime.InteropServices.Marshal.FreeHGlobal(stringMemPtr)
@@ -922,8 +889,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
             ' If the 2 paths have different root paths, return Path. 
             ' It's harder to deal with UNC root path in the algorithm.
-            If String.Compare(IO.Path.GetPathRoot(BaseDirectory), IO.Path.GetPathRoot(Path),
-                    StringComparison.OrdinalIgnoreCase) <> 0 Then
+            If String.Compare(IO.Path.GetPathRoot(BaseDirectory), IO.Path.GetPathRoot(Path), StringComparison.OrdinalIgnoreCase) <> 0 Then
                 Return RemoveEndingSeparator(Path)
             End If
 
@@ -932,37 +898,26 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Dim CommonSeparatorPosition As Integer = -1
             ' Loop until the end of a path, or different characters at an index.
             While (Index < BaseDirectory.Length) And (Index < Path.Length)
-                If Char.ToUpperInvariant(BaseDirectory.Chars(Index)) <> Char.ToUpperInvariant(Path.Chars(Index)) Then
-                    Exit While
-                Else
-                    ' Update CommonSeparatorPosition if both paths have a separator at an index.
-                    If BaseDirectory.Chars(Index) = System.IO.Path.DirectorySeparatorChar Then
-                        CommonSeparatorPosition = Index
-                    End If
-                End If
+                If Char.ToUpperInvariant(BaseDirectory.Chars(Index)) <> Char.ToUpperInvariant(Path.Chars(Index)) Then Exit While
+                ' Update CommonSeparatorPosition if both paths have a separator at an index.
+                If BaseDirectory.Chars(Index) = System.IO.Path.DirectorySeparatorChar Then CommonSeparatorPosition = Index
                 Index += 1
             End While
 
             ' Index at the end of 2 paths, they are the same, return '.'
-            If Index = BaseDirectory.Length And Index = Path.Length Then
-                Return "."
-            End If
+            If (Index = BaseDirectory.Length) AndAlso (Index = Path.Length) Then Return "."
 
             ' Otherwise, build the result.
             Dim RelativePath As New System.Text.StringBuilder
 
             ' Calculate how many directories to go up to common directory from base path.
             While (Index < BaseDirectory.Length)
-                If BaseDirectory.Chars(Index) = System.IO.Path.DirectorySeparatorChar Then
-                    RelativePath.Append(".." & System.IO.Path.DirectorySeparatorChar)
-                End If
+                If BaseDirectory.Chars(Index) = System.IO.Path.DirectorySeparatorChar Then RelativePath.Append(".." & System.IO.Path.DirectorySeparatorChar)
                 Index += 1
             End While
 
             ' Append the target path from common directory forward. 
-            If CommonSeparatorPosition < Path.Length Then
-                RelativePath.Append(Path.Substring(CommonSeparatorPosition + 1))
-            End If
+            If CommonSeparatorPosition < Path.Length Then RelativePath.Append(Path.Substring(CommonSeparatorPosition + 1))
 
             Return RemoveEndingSeparator(RelativePath.ToString)
         End Function
@@ -997,11 +952,8 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' Remove the ending separators from a path if it's not a root path.
         ''' </summary>
         Private Function RemoveEndingSeparator(Path As String) As String
-            If Not IsRootPath(Path) Then
-                Return Path.TrimEnd(IO.Path.AltDirectorySeparatorChar, IO.Path.DirectorySeparatorChar)
-            Else
-                Return Path
-            End If
+            If IsRootPath(Path) Then Return Path
+            Return Path.TrimEnd(IO.Path.AltDirectorySeparatorChar, IO.Path.DirectorySeparatorChar)
         End Function
 
 
@@ -1012,8 +964,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Dim pvParam As IntPtr = Marshal.AllocCoTaskMem(4)
             Try
                 If Interop.NativeMethods.SystemParametersInfo(Interop.win.SPI_GETSCREENREADER, 0, pvParam, 0) <> 0 Then
-                    Dim result As Int32 = Marshal.ReadInt32(pvParam)
-                    Return result <> 0
+                    Return Marshal.ReadInt32(pvParam) <> 0
                 End If
             Finally
                 Marshal.FreeCoTaskMem(pvParam)
@@ -1033,15 +984,13 @@ Namespace Microsoft.VisualStudio.Editors.Common
                 mappedBitmap = New Bitmap(unmappedBitmap)
 
                 Using g As Graphics = Graphics.FromImage(mappedBitmap)
+
                     Dim size As Size = unmappedBitmap.Size
-                    Dim r As Rectangle = New Rectangle(New Point(0, 0), size)
+                    Dim r As  New Rectangle(New Point(0, 0), size)
                     Dim colorMaps As ColorMap() = New ColorMap(0) {}
+                    colorMaps(0) = New ColorMap() With {.NewColor = newColor, .OldColor = originalColor}
 
-                    colorMaps(0) = New ColorMap
-                    colorMaps(0).OldColor = originalColor
-                    colorMaps(0).NewColor = newColor
-
-                    Dim imageAttributes As Drawing.Imaging.ImageAttributes = New Drawing.Imaging.ImageAttributes()
+                    Dim imageAttributes As New Drawing.Imaging.ImageAttributes()
                     imageAttributes.SetRemapTable(colorMaps, ColorAdjustType.Bitmap)
 
                     g.DrawImage(unmappedBitmap, r, 0, 0, size.Width, size.Height, GraphicsUnit.Pixel, imageAttributes)
@@ -1076,13 +1025,13 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <returns></returns>
         ''' <remarks></remarks>
         Public Function ServiceProviderFromHierarchy(pHier As Microsoft.VisualStudio.Shell.Interop.IVsHierarchy) As Microsoft.VisualStudio.Shell.ServiceProvider
-            If pHier IsNot Nothing Then
-                Dim OLEServiceProvider As Microsoft.VisualStudio.OLE.Interop.IServiceProvider = Nothing
-                VSErrorHandler.ThrowOnFailure(pHier.GetSite(OLEServiceProvider))
-                Return New Microsoft.VisualStudio.Shell.ServiceProvider(OLEServiceProvider)
-            Else
-                Return Nothing
-            End If
+            If pHier Is Nothing Then Return Nothing
+            Dim OLEServiceProvider As Microsoft.VisualStudio.OLE.Interop.IServiceProvider = Nothing
+
+            VSErrorHandler.ThrowOnFailure(pHier.GetSite(OLEServiceProvider))
+
+            Return New Microsoft.VisualStudio.Shell.ServiceProvider(OLEServiceProvider)
+
         End Function
 
         '@ <summary>
@@ -1094,13 +1043,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
         Public Sub SetErrorInfo(sp As Microsoft.VisualStudio.Shell.ServiceProvider, hr As Integer, errorMessage As String)
             Dim vsUIShell As Microsoft.VisualStudio.Shell.Interop.IVsUIShell = Nothing
 
-            If sp IsNot Nothing Then
-                vsUIShell = CType(sp.GetService(GetType(Microsoft.VisualStudio.Shell.Interop.IVsUIShell)), Microsoft.VisualStudio.Shell.Interop.IVsUIShell)
-            End If
+            If sp IsNot Nothing Then vsUIShell = CType(sp.GetService(GetType(Microsoft.VisualStudio.Shell.Interop.IVsUIShell)), Microsoft.VisualStudio.Shell.Interop.IVsUIShell)
 
-            If vsUIShell Is Nothing AndAlso Not VBPackage.Instance IsNot Nothing Then
-                vsUIShell = CType(VBPackage.Instance.GetService(GetType(Microsoft.VisualStudio.Shell.Interop.IVsUIShell)), Microsoft.VisualStudio.Shell.Interop.IVsUIShell)
-            End If
+            If (vsUIShell Is Nothing) AndAlso (VBPackage.Instance Is Nothing) Then vsUIShell = CType(VBPackage.Instance.GetService(GetType(Microsoft.VisualStudio.Shell.Interop.IVsUIShell)), Microsoft.VisualStudio.Shell.Interop.IVsUIShell)
 
             If vsUIShell IsNot Nothing Then
                 vsUIShell.SetErrorInfo(hr, errorMessage, 0, Nothing, Nothing)
@@ -1117,9 +1062,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="First">If True, sets focus to the first control, otherwise the last.</param>
         ''' <remarks></remarks>
         Public Function FocusFirstOrLastTabItem(HwndParent As IntPtr, First As Boolean) As Boolean
-            If HwndParent.Equals(IntPtr.Zero) Then
-                Return False
-            End If
+            If HwndParent.Equals(IntPtr.Zero) Then Return False
 
             Dim c As Control = Control.FromChildHandle(HwndParent)
             If c IsNot Nothing Then
@@ -1130,10 +1073,8 @@ Namespace Microsoft.VisualStudio.Editors.Common
                 Dim Wrap As Boolean = True
                 If c.SelectNextControl(Nothing, First, TabStopOnly, Nested, Wrap) Then
                     Dim cc As ContainerControl = TryCast(c, ContainerControl)
-                    If cc IsNot Nothing AndAlso cc.ActiveControl IsNot Nothing Then
-                        cc.ActiveControl.Focus()
-                    End If
 
+                    If (cc IsNot Nothing) AndAlso (cc.ActiveControl IsNot Nothing) Then cc.ActiveControl.Focus()
                     Return True
                 End If
 
@@ -1143,9 +1084,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
             'Use standard Win32 function for native dialog pages
             Dim FirstTabStop As IntPtr = Interop.NativeMethods.GetNextDlgTabItem(HwndParent, IntPtr.Zero, False)
-            If FirstTabStop.Equals(IntPtr.Zero) Then
-                Return False
-            End If
+            If FirstTabStop.Equals(IntPtr.Zero) Then Return False
 
             Dim NextTabStop As IntPtr
             If First Then
@@ -1154,9 +1093,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                 NextTabStop = Interop.NativeMethods.GetNextDlgTabItem(HwndParent, FirstTabStop, True)
             End If
 
-            If NextTabStop.Equals(IntPtr.Zero) Then
-                Return False
-            End If
+            If NextTabStop.Equals(IntPtr.Zero) Then Return False
 
             Interop.NativeMethods.SetFocus(NextTabStop)
             Return True
