@@ -130,9 +130,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Try
                 'Ensure the document is activated
                 If Func.ProjectItem IsNot Nothing Then
-                    If Not Func.ProjectItem.IsOpen Then
-                        Func.ProjectItem.Open()
-                    End If
+                    If Not Func.ProjectItem.IsOpen Then Func.ProjectItem.Open()
                     Func.ProjectItem.Document.Activate()
                 End If
 
@@ -157,12 +155,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <remarks></remarks>
         Public Shared Function FindCodeClass(CodeNamespace As CodeNamespace, ClassName As String) As CodeClass
             For Each Element As CodeElement In CodeNamespace.Members
-                If Element.Kind = vsCMElement.vsCMElementClass Then
-                    ' Consider, should we use language case sensitivity instead of ignore case here?
-                    If Element.Name.Equals(ClassName, StringComparison.OrdinalIgnoreCase) Then
-                        Return DirectCast(Element, CodeClass)
-                    End If
-                End If
+                If Element.Kind <> vsCMElement.vsCMElementClass Then Continue For
+                ' Consider, should we use language case sensitivity instead of ignore case here?
+                If Element.Name.Equals(ClassName, StringComparison.OrdinalIgnoreCase) Then Return DirectCast(Element, CodeClass)
             Next
 
             Return Nothing
@@ -179,12 +174,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <remarks></remarks>
         Public Shared Function FindCodeClass(CodeElements As CodeElements, NamespaceName As String, ClassName As String) As CodeClass
             For Each Element As CodeElement In CodeElements
-                If Element.Kind = vsCMElement.vsCMElementNamespace Then
-                    ' Consider, should we use language case sensitivity instead of ignore case here?
-                    If Element.Name.Equals(NamespaceName, StringComparison.OrdinalIgnoreCase) Then
-                        Return FindCodeClass(DirectCast(Element, CodeNamespace), ClassName)
-                    End If
-                End If
+                If Element.Kind <> vsCMElement.vsCMElementNamespace Then Continue For
+                ' Consider, should we use language case sensitivity instead of ignore case here?
+                If Element.Name.Equals(NamespaceName, StringComparison.OrdinalIgnoreCase) Then Return FindCodeClass(DirectCast(Element, CodeNamespace), ClassName)
             Next
 
             Return Nothing

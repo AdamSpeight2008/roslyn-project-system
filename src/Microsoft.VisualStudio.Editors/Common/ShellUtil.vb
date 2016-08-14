@@ -495,15 +495,16 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
         ''' The list of items that are to be checked out
         ''' </returns>
         ''' <remarks></remarks>
-        Friend Shared Function FileNameAndGeneratedFileName(projectitem As EnvDTE.ProjectItem, _
-                                                            Optional suffix As String = ".Designer", _
-                                                            Optional requireExactlyOneChild As Boolean = True, _
-                                                            Optional exclude As Predicate(Of String) = Nothing) _
-                               As Collections.Generic.List(Of String)
+        Friend Shared Function FileNameAndGeneratedFileName(
+                                                             projectitem As EnvDTE.ProjectItem,
+                                                    Optional suffix As String = ".Designer",
+                                                    Optional requireExactlyOneChild As Boolean = True,
+                                                    Optional exclude As Predicate(Of String) = Nothing
+                                                           ) As Collections.Generic.List(Of String)
 
             Dim result As New List(Of String)
 
-            If projectitem IsNot Nothing AndAlso projectitem.Name <> String.Empty Then
+            If (projectitem IsNot Nothing) AndAlso (projectitem.Name <> String.Empty) Then
                 result.Add(DTEUtils.FileNameFromProjectItem(projectitem))
             End If
 
@@ -573,9 +574,8 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
 
             Friend Sub ConnectBroadcastEvents()
                 Dim VSShell As IVsShell = Nothing
-                If _serviceProvider IsNot Nothing Then
-                    VSShell = DirectCast(_serviceProvider.GetService(GetType(IVsShell)), IVsShell)
-                End If
+                If _serviceProvider IsNot Nothing Then VSShell = DirectCast(_serviceProvider.GetService(GetType(IVsShell)), IVsShell)
+
                 If VSShell IsNot Nothing Then
                     VSErrorHandler.ThrowOnFailure(VSShell.AdviseBroadcastMessages(Me, _cookieBroadcastMessages))
                 Else
@@ -625,11 +625,7 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
 
             ' IDisposable
             Private Overloads Sub Dispose(disposing As Boolean)
-                If Not Me._disposed Then
-                    If disposing Then
-                        DisconnectBroadcastMessages()
-                    End If
-                End If
+                If (Not Me._disposed) AndAlso disposing Then DisconnectBroadcastMessages()
                 Me._disposed = True
             End Sub
 
@@ -681,9 +677,7 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
                 _serviceProvider = sp
                 _control = ctrl
 
-                If SetFontInitially Then
-                    _control.Font = GetDialogFont(sp)
-                End If
+                If SetFontInitially Then _control.Font = GetDialogFont(sp)
             End Sub
 
             ''' <summary>
@@ -696,15 +690,12 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
             Protected Overrides Sub OnBroadcastMessage(msg As UInteger, wParam As System.IntPtr, lParam As System.IntPtr)
                 MyBase.OnBroadcastMessage(msg, wParam, lParam)
 
-                If _control IsNot Nothing Then
-                    If msg = Interop.win.WM_SETTINGCHANGE Then
-                        ' Only set font if it is different from the current font...
-                        Dim newFont As Font = GetDialogFont(_serviceProvider)
-                        If Not newFont.Equals(_control.Font) Then
-                            _control.Font = newFont
-                        End If
-                    End If
-                End If
+                If _control Is Nothing Then Exit Sub
+                If msg <> Interop.win.WM_SETTINGCHANGE Then Exit Sub
+                ' Only set font if it is different from the current font...
+                Dim newFont As Font = GetDialogFont(_serviceProvider)
+                If Not newFont.Equals(_control.Font) Then _control.Font = newFont
+
             End Sub
 
             ''' <summary>
@@ -716,9 +707,7 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
                 Get
                     If ServiceProvider IsNot Nothing Then
                         Dim uiSvc As System.Windows.Forms.Design.IUIService = CType(ServiceProvider.GetService(GetType(System.Windows.Forms.Design.IUIService)), System.Windows.Forms.Design.IUIService)
-                        If uiSvc IsNot Nothing Then
-                            Return CType(uiSvc.Styles("DialogFont"), Font)
-                        End If
+                        If uiSvc IsNot Nothing Then Return CType(uiSvc.Styles("DialogFont"), Font)
                     End If
 
                     Debug.Fail("Couldn't get a IUIService... cheating instead :)")
@@ -777,28 +766,20 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
                                                            proxyGenerationErrors As IEnumerable(Of Microsoft.VSDesigner.WCFModel.ProxyGenerationError), _
                                                            importErrors As IEnumerable(Of Microsoft.VSDesigner.WCFModel.ProxyGenerationError)) As Integer
 
-            If serviceProvider Is Nothing Then
-                Return VSConstants.S_OK
-            End If
+            If serviceProvider Is Nothing Then Return VSConstants.S_OK
 
             Dim totalNumOfErrors As Integer = 0
 
-            If proxyGenerationErrors IsNot Nothing Then
-                totalNumOfErrors = totalNumOfErrors + proxyGenerationErrors.Count()
-            End If
+            If proxyGenerationErrors IsNot Nothing Then totalNumOfErrors = totalNumOfErrors + proxyGenerationErrors.Count()
 
-            If importErrors IsNot Nothing Then
-                totalNumOfErrors = totalNumOfErrors + importErrors.Count()
-            End If
+            If importErrors IsNot Nothing Then totalNumOfErrors = totalNumOfErrors + importErrors.Count()
 
             Dim vsErrorList As Microsoft.VisualStudio.Shell.Interop.IVsErrorList
             Dim result As Integer = VSConstants.S_OK
             ' Get the service for Error List tab window
             vsErrorList = CType(serviceProvider.GetService(GetType(Microsoft.VisualStudio.Shell.Interop.SVsErrorList)), Microsoft.VisualStudio.Shell.Interop.IVsErrorList)
 
-            If vsErrorList IsNot Nothing AndAlso totalNumOfErrors > 0 Then
-                result = vsErrorList.BringToFront()
-            End If
+            If vsErrorList IsNot Nothing AndAlso totalNumOfErrors > 0 Then result = vsErrorList.BringToFront()
 
             Return result
         End Function
@@ -821,10 +802,7 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
             Dim result As Object = Nothing
             Dim success As Boolean = VSErrorHandler.Succeeded(pHier.GetProperty(itemId, CType(__VSHPROPID3.VSHPROPID_IsDefaultNamespaceRefactorNotify, Integer), result))
 
-            If Not success OrElse result Is Nothing Then
-                Return False
-            End If
-
+            If Not success OrElse result Is Nothing Then Return False
             Return CType(result, Boolean)
         End Function
 
@@ -836,17 +814,11 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
         ''' <returns></returns>
         ''' <remarks></remarks>
         Friend Shared Function CreateTypeResolutionService(serviceProvider As IServiceProvider, hierarchy As IVsHierarchy) As System.ComponentModel.Design.ITypeResolutionService
-            Dim dynamicTypeService As Microsoft.VisualStudio.Shell.Design.DynamicTypeService = _
-                    TryCast(serviceProvider.GetService( _
-                    GetType(Microsoft.VisualStudio.Shell.Design.DynamicTypeService)), _
-                    Microsoft.VisualStudio.Shell.Design.DynamicTypeService)
+            Dim dynamicTypeService = TryCast(serviceProvider.GetService(GetType(Microsoft.VisualStudio.Shell.Design.DynamicTypeService)), Microsoft.VisualStudio.Shell.Design.DynamicTypeService)
 
             Dim trs As System.ComponentModel.Design.ITypeResolutionService = Nothing
 
-            If dynamicTypeService IsNot Nothing Then
-                trs = dynamicTypeService.GetTypeResolutionService(hierarchy, VSITEMID.ROOT)
-            End If
-
+            If dynamicTypeService IsNot Nothing Then trs = dynamicTypeService.GetTypeResolutionService(hierarchy, VSITEMID.ROOT)
             Return trs
         End Function
 
@@ -860,18 +832,14 @@ Color Index = {VsSysColorIndex}, Default Color = &h{VB.Hex(DefaultColor.ToArgb)}
         ''' <returns></returns>
         ''' <remarks></remarks>
         Public Shared Function GetVSColor(VsSysColorIndex As __VSSYSCOLOREX3, DefaultColor As Color, Optional UseVSTheme As Boolean = True) As Color
-            If Not UseVSTheme Then
-                Return DefaultColor
-            End If
+            If Not UseVSTheme Then Return DefaultColor
             ' VBPackage.Instance cannot be Nothing
             Dim VsUIShell2 As IVsUIShell2 = DirectCast(Microsoft.VisualStudio.Shell.Package.GetGlobalService(GetType(SVsUIShell)), IVsUIShell2)
 
             If VsUIShell2 IsNot Nothing Then
                 Dim abgrValue As System.UInt32
                 Dim Hr As Integer = VsUIShell2.GetVSSysColorEx(VsSysColorIndex, abgrValue)
-                If VSErrorHandler.Succeeded(Hr) Then
-                    Return ColorTranslator.FromWin32(CType(abgrValue, Integer))
-                End If
+                If VSErrorHandler.Succeeded(Hr) Then Return ColorTranslator.FromWin32(CType(abgrValue, Integer))
             End If
 
             Debug.Fail(

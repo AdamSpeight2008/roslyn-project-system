@@ -58,27 +58,17 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
     ''' <remarks>
     ''' This interface is defined in vseditors.idl
     ''' </remarks>
-    <ComImport(), Guid("365cb21a-0f0f-47bc-9653-3c81e0e3f9d6"), InterfaceTypeAttribute(ComInterfaceType.InterfaceIsIUnknown)> _
+    <ComImport, Guid("365cb21a-0f0f-47bc-9653-3c81e0e3f9d6"), InterfaceTypeAttribute(ComInterfaceType.InterfaceIsIUnknown)>
     Friend Interface IVsMyAppManager
-        <PreserveSig()> _
-        Function Init(<[In]()> ProjectHierarchy As IVsHierarchy) As Integer 'Initialize the MyApplicationProperties object, etc.
-
-        <PreserveSig()> _
-        Function GetProperties(<Out(), MarshalAs(UnmanagedType.IDispatch)> ByRef MyAppProps As Object) As Integer 'Get MyAppliationProperties object
-
-        <PreserveSig()> _
-        Function Save() As Integer 'Save any MyApplicationProperties changes to disk (in MyApplication.myapp), if dirty
-
-        <PreserveSig()> _
-        Function Close() As Integer 'Called by the project system upon closing a project.  Any unpersisted data at this point is discarded
+        <PreserveSig> Function Init(<[In]> ProjectHierarchy As IVsHierarchy) As Integer 'Initialize the MyApplicationProperties object, etc.
+        <PreserveSig> Function GetProperties(<Out(), MarshalAs(UnmanagedType.IDispatch)> ByRef MyAppProps As Object) As Integer 'Get MyAppliationProperties object
+        <PreserveSig> Function Save() As Integer 'Save any MyApplicationProperties changes to disk (in MyApplication.myapp), if dirty
+        <PreserveSig> Function Close() As Integer 'Called by the project system upon closing a project.  Any unpersisted data at this point is discarded
     End Interface
-
-
 
     '****************************************************************************************
     ' Interface IVsMyApplicationProperties
     '****************************************************************************************
-
 
     Friend Enum MyAppDISPIDs
         CustomSubMain = 1
@@ -98,7 +88,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
     ''' <remarks>
     ''' This interface is not currently exposed to the public, except via dispatch.
     ''' </remarks>
-    <ComVisible(True), Guid("6fec8bad-4bec-4447-a4ce-b48543a31165"), InterfaceType(ComInterfaceType.InterfaceIsDual)> _
+    <ComVisible(True), Guid("6fec8bad-4bec-4447-a4ce-b48543a31165"), InterfaceType(ComInterfaceType.InterfaceIsDual)>
     Public Interface IVsMyApplicationProperties
         <DispId(MyAppDISPIDs.CustomSubMain)> Property CustomSubMain() As Boolean
         <DispId(MyAppDISPIDs.MainForm)> Property MainForm() As String
@@ -148,9 +138,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' <returns></returns>
         ''' <remarks></remarks>
         Private Function Init(ProjectHierarchy As Shell.Interop.IVsHierarchy) As Integer Implements IVsMyAppManager.Init
-            If ProjectHierarchy Is Nothing Then
-                Throw New ArgumentNullException("ProjectHierarchy")
-            End If
+            If ProjectHierarchy Is Nothing Then Throw New ArgumentNullException(NameOf(ProjectHierarchy))
 
             SyncLock s_myPropertyInstances
                 Dim weakref As WeakReference
@@ -207,9 +195,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' <returns></returns>
         ''' <remarks></remarks>
         Private Function Save() As Integer Implements IVsMyAppManager.Save
-            If _myProps IsNot Nothing Then
-                _myProps.Save()
-            End If
+            If _myProps IsNot Nothing Then _myProps.Save()
             Return NativeMethods.S_OK
         End Function
 
@@ -314,7 +300,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
             Dim obj As Object = Nothing
 
             If ProjectHierarchy Is Nothing Then
-                Throw New ArgumentNullException("ProjectHierarchy")
+                Throw New ArgumentNullException(NameOf(ProjectHierarchy))
             End If
 
             _projectHierarchy = ProjectHierarchy
@@ -396,9 +382,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
             PrepareMyAppDocData()
 
             Debug.Assert(_myAppDocData IsNot Nothing, "m_MyAppDocData is nothing")
-            If _myAppDocData IsNot Nothing AndAlso _serviceProvider IsNot Nothing Then
-                _myAppDocData.CheckoutFile(_serviceProvider)
-            End If
+            If (_myAppDocData IsNot Nothing) AndAlso (_serviceProvider IsNot Nothing) Then _myAppDocData.CheckoutFile(_serviceProvider)
         End Sub
 
         ''' <summary>
@@ -407,28 +391,17 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' <remarks></remarks>
         Friend Sub RunCustomTool() Implements IMyApplicationPropertiesInternal.RunCustomTool
             Dim item As EnvDTE.ProjectItem = MyAppProjectItem
-            If item IsNot Nothing Then
-                Dim VsProjectItem As VSLangProj.VSProjectItem = TryCast(item.Object, VSLangProj.VSProjectItem)
-                If VsProjectItem IsNot Nothing Then
-                    VsProjectItem.RunCustomTool()
-                End If
-            End If
+            If item Is Nothing Then Exit Sub
+            Dim VsProjectItem As VSLangProj.VSProjectItem = TryCast(item.Object, VSLangProj.VSProjectItem)
+            If VsProjectItem IsNot Nothing Then VsProjectItem.RunCustomTool()
         End Sub
 
         Protected Overloads Function AddFileToProject(ProjectItems As EnvDTE.ProjectItems, FileName As String, CopyFile As Boolean) As EnvDTE.ProjectItem
             Dim ProjectItem As EnvDTE.ProjectItem = MyAppProjectItem
 
             'First see if it is already in the project
-            If ProjectItem IsNot Nothing Then
-                Return ProjectItem
-            End If
-
-            If CopyFile Then
-                ProjectItem = ProjectItems.AddFromFileCopy(FileName)
-            Else
-                ProjectItem = ProjectItems.AddFromFile(FileName)
-            End If
-            Return ProjectItem
+            If ProjectItem IsNot Nothing Then Return ProjectItem
+            Return If(CopyFile, ProjectItems.AddFromFileCopy(FileName), ProjectItems.AddFromFile(FileName))
         End Function
 
         Private ReadOnly Property ServiceProvider() As Microsoft.VisualStudio.Shell.ServiceProvider
@@ -495,11 +468,8 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' </remarks>
         Public Property MainForm() As String Implements IVsMyApplicationProperties.MainForm
             Get
-                If _myAppData.MainFormNoRootNS = String.Empty Then
-                    Return String.Empty
-                Else
-                    Return AddNamespace(GetRootNamespace(), _myAppData.MainFormNoRootNS)
-                End If
+                If _myAppData.MainFormNoRootNS = String.Empty Then Return String.Empty
+                Return AddNamespace(GetRootNamespace(), _myAppData.MainFormNoRootNS)
             End Get
             Set(value As String)
                 Me.MainFormNoRootNamespace = RemoveRootNamespace(value, GetRootNamespace())
@@ -640,11 +610,8 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' If this property is not currently set to a meaningful value, we return empty string.
         Public Property SplashScreen() As String Implements IVsMyApplicationProperties.SplashScreen
             Get
-                If _myAppData.SplashScreenNoRootNS = String.Empty Then
-                    Return String.Empty
-                Else
-                    Return AddNamespace(GetRootNamespace(), _myAppData.SplashScreenNoRootNS)
-                End If
+                If _myAppData.SplashScreenNoRootNS = String.Empty Then Return String.Empty
+                Return AddNamespace(GetRootNamespace(), _myAppData.SplashScreenNoRootNS)
             End Get
             Set(value As String)
                 SplashScreenNoRootNS = RemoveRootNamespace(value, GetRootNamespace())
@@ -710,9 +677,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                     stream = Nothing 'Writer will now close
 
                     _myAppDocData = Nothing
-                    If _docDataService IsNot Nothing Then
-                        _docDataService.Dispose()
-                    End If
+                    If _docDataService IsNot Nothing Then _docDataService.Dispose()
                     _docDataService = Nothing
                 Finally
                     If writer IsNot Nothing Then
@@ -851,14 +816,9 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' <returns></returns>
         ''' <remarks></remarks>
         Private Function GetProjectItemProperty(ProjectItem As EnvDTE.ProjectItem, PropertyName As String) As EnvDTE.Property
-            If ProjectItem.Properties Is Nothing Then
-                Return Nothing
-            End If
-
+            If ProjectItem.Properties Is Nothing Then Return Nothing
             For Each Prop As EnvDTE.Property In ProjectItem.Properties
-                If Prop.Name.Equals(PropertyName, StringComparison.OrdinalIgnoreCase) Then
-                    Return Prop
-                End If
+                If Prop.Name.Equals(PropertyName, StringComparison.OrdinalIgnoreCase) Then Return Prop
             Next
 
             Return Nothing
@@ -874,16 +834,11 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
             Dim NamespaceProperty As EnvDTE.Property = GetProjectItemProperty(ProjectItem, s_PROJECTPROPERTY_CUSTOMTOOLNAMESPACE)
 
             Try
-                If ToolProperty Is Nothing Then
-                    'No custom tool property in this project, so nothing to do
-                    Exit Sub
-                End If
+                If ToolProperty Is Nothing Then Exit Sub 'No custom tool property in this project, so nothing to do
 
                 Dim CurrentCustomTool As String = TryCast(ToolProperty.Value, String)
 
-                If CurrentCustomTool <> Value Then
-                    ToolProperty.Value = Value
-                End If
+                If CurrentCustomTool <> Value Then ToolProperty.Value = Value
 
             Catch ex As COMException
                 'The COM exception don't give us much to go on.  In the SCC case, for instance, if 
@@ -969,14 +924,13 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                     End If
 
                     'Add comments
-                    Dim Comments As String = _
-                        SR.GetString(SR.PPG_Application_AppEventsCommentLine1) _
-                        & vbCrLf & SR.GetString(SR.PPG_Application_AppEventsCommentLine2) _
-                        & vbCrLf & SR.GetString(SR.PPG_Application_AppEventsCommentLine3) _
-                        & vbCrLf & SR.GetString(SR.PPG_Application_AppEventsCommentLine4) _
-                        & vbCrLf & SR.GetString(SR.PPG_Application_AppEventsCommentLine5) _
-                        & vbCrLf & SR.GetString(SR.PPG_Application_AppEventsCommentLine6) _
-                        & vbCrLf & SR.GetString(SR.PPG_Application_AppEventsCommentLine7)
+                    Dim Comments As String = SR.GetString(SR.PPG_Application_AppEventsCommentLine1) & vbCrLf &
+                                             SR.GetString(SR.PPG_Application_AppEventsCommentLine2) & vbCrLf &
+                                             SR.GetString(SR.PPG_Application_AppEventsCommentLine3) & vbCrLf &
+                                             SR.GetString(SR.PPG_Application_AppEventsCommentLine4) & vbCrLf &
+                                             SR.GetString(SR.PPG_Application_AppEventsCommentLine5) & vbCrLf &
+                                             SR.GetString(SR.PPG_Application_AppEventsCommentLine6) & vbCrLf &
+                                             SR.GetString(SR.PPG_Application_AppEventsCommentLine7)
                     MyEventsClass.Comment = Comments
                 End If
             End If
@@ -1037,10 +991,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                     Dim projectFileName As String = ProjectDesignerProjectItem.ContainingProject.FullName
                     filesToCheckOut.Add(projectFileName)
                     DesignerFramework.SourceCodeControlManager.QueryEditableFiles(ServiceProvider, filesToCheckOut, True, False, fileReloaded)
-                    If fileReloaded Then
-                        ' The project was reloaded - we've got to bail ASAP!
-                        Return
-                    End If
+                    If fileReloaded Then Return ' The project was reloaded - we've got to bail ASAP!
 
                     MyEventsProjectItem = CreateNewMyEventsFile(ProjectDesignerProjectItem.ContainingProject.ProjectItems, s_const_MyEventsFileName, Const_MyEventsNamespace, Const_MyEventsClassName)
                     FileIsNew = True
@@ -1095,6 +1046,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' <returns></returns>
         ''' <remarks></remarks>
         Friend Shared Function GetProjectItemForProjectDesigner(ProjectHierarchy As IVsHierarchy) As EnvDTE.ProjectItem
+
             Dim SpecialFiles As IVsProjectSpecialFiles = CType(ProjectHierarchy, IVsProjectSpecialFiles)
             Dim ProjectDesignerItemId As UInteger
             Dim ProjectDesignerDirName As String = Nothing
@@ -1103,14 +1055,13 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
 
             Debug.Assert(SpecialFiles IsNot Nothing, "Failed to get IVsProjectSpecialFiles for Hierarchy")
             'Make sure 'My Application' node exists
-            If SpecialFiles IsNot Nothing Then
-                VSErrorHandler.ThrowOnFailure(SpecialFiles.GetFile(__PSFFILEID2.PSFFILEID_AppDesigner, CUInt(__PSFFLAGS.PSFF_CreateIfNotExist), ProjectDesignerItemId, ProjectDesignerDirName))
+            If SpecialFiles Is Nothing Then Return Nothing
+            VSErrorHandler.ThrowOnFailure(SpecialFiles.GetFile(__PSFFILEID2.PSFFILEID_AppDesigner,
+                                                               CUInt(__PSFFLAGS.PSFF_CreateIfNotExist), ProjectDesignerItemId, ProjectDesignerDirName))
 
-                hr = ProjectHierarchy.GetProperty(ProjectDesignerItemId, __VSHPROPID.VSHPROPID_ExtObject, obj)
-                If NativeMethods.Succeeded(hr) Then
-                    Return TryCast(obj, EnvDTE.ProjectItem)
-                End If
-            End If
+            hr = ProjectHierarchy.GetProperty(ProjectDesignerItemId, __VSHPROPID.VSHPROPID_ExtObject, obj)
+            If NativeMethods.Succeeded(hr) Then Return TryCast(obj, EnvDTE.ProjectItem)
+
             Return Nothing
         End Function
 
@@ -1120,11 +1071,10 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' </summary>
         ''' <remarks></remarks>
         Friend Sub Close()
-            If _myAppDocData IsNot Nothing Then
-                _myAppDocData = Nothing
-                _docDataService.Dispose()
-                _docDataService = Nothing
-            End If
+            If _myAppDocData Is Nothing Then Exit Sub
+            _myAppDocData = Nothing
+            _docDataService.Dispose()
+            _docDataService = Nothing
         End Sub
 
 
@@ -1134,46 +1084,41 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' </summary>
         ''' <remarks></remarks>
         Friend Sub Save()
-            If _myAppDocData IsNot Nothing Then
-                'Make sure the doc data is up to date (in reality in our current model, we shouldn't ever be in a dirty state
-                '  like this).
-                If Me._myAppData.IsDirty Then
-                    FlushToDocData()
+            If _myAppDocData Is Nothing Then Exit Sub
+            'Make sure the doc data is up to date (in reality in our current model, we shouldn't ever be in a dirty state
+            '  like this).
+            If Me._myAppData.IsDirty Then FlushToDocData()
+
+            If _docDataService IsNot Nothing AndAlso _docDataService.PrimaryDocData.Modified Then
+                'The doc data is dirty.  We need to flush it immediately to disk.  This routine
+                '  gets called from the project system when it is saving the project file.  All other
+                '  files in the project (e.g. the .myapp) will have already been saved by now if we're
+                '  doing a build.  If the previous FlushToDocData caused the doc data to be dirty, but
+                '  we don't force a flush to the disk, the .myapp file will still be dirty after the
+                '  build.  Also, we want to enforce that whenever the project file is saved, the .myapp
+                '  file should be saved (for the case of saving via extensibility, etc.).
+                '
+                'Also note that theoretically we should participate in the decision of whether the project
+                '  file is dirty (in the project code), but since we always flush to our doc data after any
+                '  property change, this isn't currently necessary.  If we've made changes, either our doc
+                '  data will be dirty or the file on disk will have been changed.
+
+                Dim Item As EnvDTE.ProjectItem = MyAppProjectItem
+                Debug.Assert(Item IsNot Nothing)
+                If Item IsNot Nothing Then
+                    'We could go through the running doc table, or through ProjectItem.Save.  We choose to use
+                    '  ProjectItem.Save() because a) it's convenient, b) it does an immediate run of the custom
+                    '  tool.  Besides it also goes through the RDT.
+                    Item.Save()
                 End If
-
-                If _docDataService IsNot Nothing AndAlso _docDataService.PrimaryDocData.Modified Then
-                    'The doc data is dirty.  We need to flush it immediately to disk.  This routine
-                    '  gets called from the project system when it is saving the project file.  All other
-                    '  files in the project (e.g. the .myapp) will have already been saved by now if we're
-                    '  doing a build.  If the previous FlushToDocData caused the doc data to be dirty, but
-                    '  we don't force a flush to the disk, the .myapp file will still be dirty after the
-                    '  build.  Also, we want to enforce that whenever the project file is saved, the .myapp
-                    '  file should be saved (for the case of saving via extensibility, etc.).
-                    '
-                    'Also note that theoretically we should participate in the decision of whether the project
-                    '  file is dirty (in the project code), but since we always flush to our doc data after any
-                    '  property change, this isn't currently necessary.  If we've made changes, either our doc
-                    '  data will be dirty or the file on disk will have been changed.
-
-                    Dim Item As EnvDTE.ProjectItem = MyAppProjectItem
-                    Debug.Assert(Item IsNot Nothing)
-                    If Item IsNot Nothing Then
-                        'We could go through the running doc table, or through ProjectItem.Save.  We choose to use
-                        '  ProjectItem.Save() because a) it's convenient, b) it does an immediate run of the custom
-                        '  tool.  Besides it also goes through the RDT.
-                        Item.Save()
-                    End If
-                End If
-
-                _myAppData.IsDirty = False
             End If
+
+            _myAppData.IsDirty = False
         End Sub
 
         'UserControl overrides dispose to clean up the component list.
         Protected Overloads Sub Dispose(disposing As Boolean)
-            If disposing Then
-                Close()
-            End If
+            If disposing Then Close()
         End Sub
 
         Public Overloads Sub Dispose() Implements System.IDisposable.Dispose
@@ -1204,9 +1149,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' <returns></returns>
         ''' <remarks></remarks>
         Public Overrides Function FilesToCheckOut(CreateIfNotExist As Boolean) As String()
-            If CreateIfNotExist Then
-                PrepareMyAppDocData()
-            End If
+            If CreateIfNotExist Then PrepareMyAppDocData()
 
             If MyAppProjectItem Is Nothing Then
                 Debug.Fail(NameOf(MyAppProjectItem) & " is Nothing")
@@ -1251,45 +1194,21 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' <remarks></remarks>
         Private Sub FireChangeNotificationsForNewValues(OldValues As MyApplication.MyApplicationData, NewValues As MyApplication.MyApplicationData)
             'AuthenticationMode
-            If OldValues.AuthenticationMode <> NewValues.AuthenticationMode Then
-                OnPropertyChanged(s_PROPNAME_AuthenticationMode)
-            End If
-
+            If OldValues.AuthenticationMode <> NewValues.AuthenticationMode Then OnPropertyChanged(s_PROPNAME_AuthenticationMode)
             'CustomSubMain
-            If OldValues.MySubMain <> NewValues.MySubMain Then
-                OnPropertyChanged(s_PROPNAME_CustomSubMain)
-            End If
-
+            If OldValues.MySubMain <> NewValues.MySubMain Then OnPropertyChanged(s_PROPNAME_CustomSubMain)
             'EnableVisualStyles
-            If OldValues.EnableVisualStyles <> NewValues.EnableVisualStyles Then
-                OnPropertyChanged(s_PROPNAME_EnableVisualStyles)
-            End If
-
+            If OldValues.EnableVisualStyles <> NewValues.EnableVisualStyles Then OnPropertyChanged(s_PROPNAME_EnableVisualStyles)
             'MainForm
-            If Not StringPropertyValuesEqual(OldValues.MainFormNoRootNS, NewValues.MainFormNoRootNS) Then
-                OnPropertyChanged(s_PROPNAME_MainForm)
-            End If
-
+            If Not StringPropertyValuesEqual(OldValues.MainFormNoRootNS, NewValues.MainFormNoRootNS) Then OnPropertyChanged(s_PROPNAME_MainForm)
             'SaveMySettingsOnExit
-            If OldValues.SaveMySettingsOnExit <> NewValues.SaveMySettingsOnExit Then
-                OnPropertyChanged(s_PROPNAME_SaveMySettingsOnExit)
-            End If
-
+            If OldValues.SaveMySettingsOnExit <> NewValues.SaveMySettingsOnExit Then OnPropertyChanged(s_PROPNAME_SaveMySettingsOnExit)
             'ShutdownMode
-            If OldValues.ShutdownMode <> NewValues.ShutdownMode Then
-                OnPropertyChanged(s_PROPNAME_ShutdownMode)
-            End If
-
+            If OldValues.ShutdownMode <> NewValues.ShutdownMode Then OnPropertyChanged(s_PROPNAME_ShutdownMode)
             'SingleInstance
-            If OldValues.SingleInstance <> NewValues.SingleInstance Then
-                OnPropertyChanged(s_PROPNAME_SingleInstance)
-            End If
-
+            If OldValues.SingleInstance <> NewValues.SingleInstance Then OnPropertyChanged(s_PROPNAME_SingleInstance)
             'SplashScreen
-            If Not StringPropertyValuesEqual(OldValues.SplashScreenNoRootNS, NewValues.SplashScreenNoRootNS) Then
-                OnPropertyChanged(s_PROPNAME_SplashScreen)
-            End If
-
+            If Not StringPropertyValuesEqual(OldValues.SplashScreenNoRootNS, NewValues.SplashScreenNoRootNS) Then OnPropertyChanged(s_PROPNAME_SplashScreen)
         End Sub
 
         ''' <summary>
@@ -1468,10 +1387,8 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         Friend Shared Function IsMySubMainSupported(Hierarchy As IVsHierarchy) As Boolean
             Try
                 Dim obj As Object = Nothing
-                If Hierarchy IsNot Nothing Then
-                    VSErrorHandler.ThrowOnFailure(Hierarchy.GetProperty(VSITEMID.ROOT, __VSHPROPID.VSHPROPID_BrowseObject, obj))
-                End If
-                Dim props3 As VSLangProj80.VBProjectProperties3 = TryCast(obj, VSLangProj80.VBProjectProperties3)
+                If Hierarchy IsNot Nothing Then VSErrorHandler.ThrowOnFailure(Hierarchy.GetProperty(VSITEMID.ROOT, __VSHPROPID.VSHPROPID_BrowseObject, obj))
+                Dim props3 = TryCast(obj, VSLangProj80.VBProjectProperties3)
                 If props3 IsNot Nothing Then
                     Return MyApplicationProperties.ApplicationTypeFromOutputType(
                                 CUInt(props3.OutputType),

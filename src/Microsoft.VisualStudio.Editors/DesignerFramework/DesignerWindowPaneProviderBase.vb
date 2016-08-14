@@ -91,9 +91,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 _view.Text = "DesignerWindowPaneBase View"
 
                 _host = DirectCast(GetService(GetType(IDesignerHost)), IDesignerHost)
-                If _host IsNot Nothing AndAlso Not _host.Loading Then
-                    PopulateView()
-                End If
+                If (_host IsNot Nothing) AndAlso Not _host.Loading Then PopulateView()
 
                 AddHandler surface.Loaded, AddressOf Me.OnLoaded
                 AddHandler surface.Unloading, AddressOf Me.OnSurfaceUnloading
@@ -126,11 +124,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             ''' We override this so we can disable toolbox support.
             ''' </remarks>
             Protected Overrides Function GetToolboxItemSupported(toolboxItem As IOleDataObject) As Boolean
-                If Not _supportToolbox Then
-                    'PERF: NOTE: If we don't need toolbox support, we simply return False here for all toolbox items (faster)
-                    Return False
-                End If
-
+                If Not _supportToolbox Then Return False 'PERF: NOTE: If we don't need toolbox support, we simply return False here for all toolbox items (faster)
                 'Otherwise, let the base class do its normal thing...
                 Return MyBase.GetToolboxItemSupported(toolboxItem)
             End Function
@@ -148,9 +142,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                     ' a load event if a bad event handler threw before
                     ' we got invoked.
                     '
-                    If _view IsNot Nothing AndAlso _view.Controls.Count = 0 Then
-                        PopulateView()
-                    End If
+                    If _view?.Controls.Count = 0 Then PopulateView()
                     Return _view
                 End Get
             End Property
@@ -161,19 +153,13 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             ''' </summary>
             ''' <remarks></remarks>
             Private Sub DisableUndo()
-                If _undoEngine IsNot Nothing Then
-
-                    Dim c As IServiceContainer = DirectCast(GetService(GetType(IServiceContainer)), IServiceContainer)
-
-                    If c IsNot Nothing Then
-                        c.RemoveService(GetType(UndoEngine))
-                    End If
-
-                    _undoEngine.Dispose()
-                    RemoveHandler _undoEngine.Undoing, AddressOf Me.OnUndoing
-                    RemoveHandler _undoEngine.Undone, AddressOf Me.OnUndone
-                    _undoEngine = Nothing
-                End If
+                If _undoEngine Is Nothing Then Exit Sub
+                Dim c As IServiceContainer = DirectCast(GetService(GetType(IServiceContainer)), IServiceContainer)
+                If c IsNot Nothing Then c.RemoveService(GetType(UndoEngine))
+                _undoEngine.Dispose()
+                RemoveHandler _undoEngine.Undoing, AddressOf Me.OnUndoing
+                RemoveHandler _undoEngine.Undone, AddressOf Me.OnUndone
+                _undoEngine = Nothing
             End Sub
 
 
@@ -260,9 +246,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 MyBase.OnCreate()
 
                 _host = DirectCast(GetService(GetType(IDesignerHost)), IDesignerHost)
-                If (_host IsNot Nothing AndAlso Not _host.Loading) Then
-                    EnableUndo()
-                End If
+                If (_host IsNot Nothing AndAlso Not _host.Loading) Then EnableUndo()
             End Sub
 
 
@@ -396,9 +380,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
 
                     Dim message As String = loadError.Message
 
-                    If (message Is Nothing OrElse message.Length = 0) Then
-                        message = loadError.ToString()
-                    End If
+                    If (message?.Length = 0) Then message = loadError.ToString()
 
                     Dim errors As ArrayList = New ArrayList()
                     errors.Add(message)
@@ -408,7 +390,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
 
                 If (viewChild Is Nothing) Then
                     Dim er As String = SR.GetString(SR.DFX_WindowPane_UnknownError)
-                    Dim errors As ArrayList = New ArrayList()
+                    Dim errors As New ArrayList()
                     errors.Add(er)
                     viewChild = New ErrorControl(errors)
                 End If
@@ -442,13 +424,9 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             ''' <remarks></remarks>
             Private ReadOnly Property GetDialogFont() As Font
                 Get
-                    Dim uiSvc As System.Windows.Forms.Design.IUIService = CType(GetService(GetType(System.Windows.Forms.Design.IUIService)), System.Windows.Forms.Design.IUIService)
-                    If uiSvc IsNot Nothing Then
-                        Return CType(uiSvc.Styles("DialogFont"), Font)
-                    End If
-
+                    Dim uiSvc = CType(GetService(GetType(System.Windows.Forms.Design.IUIService)), System.Windows.Forms.Design.IUIService)
+                    If uiSvc IsNot Nothing Then Return CType(uiSvc.Styles("DialogFont"), Font)
                     Debug.Fail("Couldn't get a IUIService... cheating instead :)")
-
                     Return Form.DefaultFont
                 End Get
             End Property
@@ -467,9 +445,8 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             ''' <remarks></remarks>
             Public Function IVsWindowPaneCommit_CommitPendingEdit(ByRef pfCommitFailed As Integer) As Integer Implements IVsWindowPaneCommit.CommitPendingEdit
                 Dim viewAsIVsWindowPaneCommit As IVsWindowPaneCommit = Nothing
-                If Not _loadError AndAlso Surface IsNot Nothing Then
-                    viewAsIVsWindowPaneCommit = TryCast(Surface.View, IVsWindowPaneCommit)
-                End If
+                If Not _loadError AndAlso (Surface IsNot Nothing) Then viewAsIVsWindowPaneCommit = TryCast(Surface.View, IVsWindowPaneCommit)
+
                 If viewAsIVsWindowPaneCommit IsNot Nothing Then
                     ' Let the view helper handle this....
                     viewAsIVsWindowPaneCommit.CommitPendingEdit(pfCommitFailed)

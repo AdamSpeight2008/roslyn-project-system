@@ -48,23 +48,16 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         '''   were to happen in the middle of things.
         ''' </remarks>
         Friend Overridable Sub ManualCheckOut(ByRef ProjectReloaded As Boolean)
-            If _readOnlyMode Then
-                Throw New ApplicationException(_readOnlyPrompt)
-            End If
+            If _readOnlyMode Then Throw New ApplicationException(_readOnlyPrompt)
 
             Try
-                If ManagingDynamicSetOfFiles Then
-                    _sourceCodeControlManager.ManagedFiles = FilesToCheckOut
-                End If
+                If ManagingDynamicSetOfFiles Then _sourceCodeControlManager.ManagedFiles = FilesToCheckOut
 
                 Dim RootDesigner As IRootDesigner = Nothing
                 Dim View As BaseDesignerView = Nothing
-                If LoaderHost IsNot Nothing AndAlso LoaderHost.RootComponent IsNot Nothing Then
-                    RootDesigner = TryCast(LoaderHost.GetDesigner(LoaderHost.RootComponent), IRootDesigner)
-                End If
-                If RootDesigner IsNot Nothing Then
-                    View = TryCast(RootDesigner.GetView(ViewTechnology.Default), BaseDesignerView)
-                End If
+                If (LoaderHost IsNot Nothing) AndAlso (LoaderHost.RootComponent IsNot Nothing) Then RootDesigner = TryCast(LoaderHost.GetDesigner(LoaderHost.RootComponent), IRootDesigner)
+                If (RootDesigner IsNot Nothing) Then View = TryCast(RootDesigner.GetView(ViewTechnology.Default), BaseDesignerView)
+
                 Debug.Assert(View IsNot Nothing, NameOf(ManualCheckOut) & ": Unable to locate base designer view to call " & NameOf(Enter) & "/" & NameOf(LeaveProjectCheckoutSection))
 
                 If View IsNot Nothing Then
@@ -96,13 +89,8 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <returns></returns>
         ''' <remarks></remarks>
         Friend Overridable Function OkToEdit() As Boolean
-            If _readOnlyMode Then
-                Return False
-            End If
-
-            If ManagingDynamicSetOfFiles Then
-                _sourceCodeControlManager.ManagedFiles = FilesToCheckOut
-            End If
+            If _readOnlyMode Then Return False
+            If ManagingDynamicSetOfFiles Then _sourceCodeControlManager.ManagedFiles = FilesToCheckOut
             Return _sourceCodeControlManager.AreFilesEditable()
         End Function
 
@@ -386,23 +374,19 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         End Enum
 
         Public Function GetEditorCaption(Status As EditorCaptionState) As String
-            Dim Caption As String = _baseEditorCaption
-            If Caption Is Nothing Then
-                Caption = String.Empty
-            End If
+            Dim Caption As String = If(_baseEditorCaption, String.Empty)
 
-            If Status = EditorCaptionState.AutoDetect Then
-                If m_DocData Is Nothing OrElse DocDataIsReadOnly Then
-                    Status = EditorCaptionState.ReadOnly
-                Else
-                    Status = EditorCaptionState.NotReadOnly
-                End If
-            End If
-
-            If Status = EditorCaptionState.ReadOnly Then
-                'Append "[Read Only]" to the caption so far
-                Caption = SR.GetString(SR.DFX_DesignerReadOnlyCaption, Caption)
-            End If
+            Select Case Status
+                Case EditorCaptionState.AutoDetect
+                    If m_DocData Is Nothing OrElse DocDataIsReadOnly Then
+                        Status = EditorCaptionState.ReadOnly
+                    Else
+                        Status = EditorCaptionState.NotReadOnly
+                    End If
+                Case EditorCaptionState.ReadOnly
+                    'Append "[Read Only]" to the caption so far
+                    Caption = SR.GetString(SR.DFX_DesignerReadOnlyCaption, Caption)
+            End Select
 
             Return Caption
         End Function
@@ -456,9 +440,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 Return
             End If
 
-            If moniker Is Nothing Then
-                moniker = String.Empty
-            End If
+            If moniker Is Nothing Then moniker = String.Empty
 
             _moniker = moniker
             _vsHierarchy = Hierarchy
@@ -664,9 +646,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 Exit Sub
             End Try
 
-            If ThisProjectItem Is Nothing Then
-                Exit Sub
-            End If
+            If ThisProjectItem Is Nothing Then Exit Sub
 
             Switches.TracePDFocus(TraceLevel.Warning, NameOf(BaseDesignerLoader) & "." & NameOf(BaseDesignerLoader.WindowActivated))
 
@@ -678,9 +658,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 Catch ex As Exception When Common.ReportWithoutCrash(ex, NameOf(m_WindowEvents_WindowActivated), NameOf(BaseDesignerLoader))
                 End Try
 
-                If LostFocusProjectItem Is ThisProjectItem Then
-                    OnDesignerWindowActivated(False)
-                End If
+                If LostFocusProjectItem Is ThisProjectItem Then OnDesignerWindowActivated(False)
             End If
             If GotFocus IsNot Nothing Then
                 'This seems to throw sometimes, let's ignore if that happens
@@ -690,9 +668,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 Catch ex As Exception When Common.ReportWithoutCrash(ex, NameOf(m_WindowEvents_WindowActivated), NameOf(BaseDesignerLoader))
                 End Try
 
-                If GotFocusProjectItem Is ThisProjectItem Then
-                    OnDesignerWindowActivated(True)
-                End If
+                If GotFocusProjectItem Is ThisProjectItem Then OnDesignerWindowActivated(True)
             End If
         End Sub
 
@@ -712,9 +688,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' </summary>
         ''' <remarks></remarks>
         Private Sub AdviseRunningDocTableEvents()
-            If _rdt IsNot Nothing Then
-                VSErrorHandler.ThrowOnFailure(_rdt.AdviseRunningDocTableEvents(Me, _rdtEventsCookie))
-            End If
+            If _rdt IsNot Nothing Then VSErrorHandler.ThrowOnFailure(_rdt.AdviseRunningDocTableEvents(Me, _rdtEventsCookie))
         End Sub
 
         ''' <summary>
@@ -722,12 +696,9 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' </summary>
         ''' <remarks></remarks>
         Private Sub UnadviseRunningDocTableEvents()
-            If _rdtEventsCookie <> 0 Then
-                If _rdt IsNot Nothing Then
-                    VSErrorHandler.ThrowOnFailure(_rdt.UnadviseRunningDocTableEvents(_rdtEventsCookie))
-                End If
-                _rdtEventsCookie = 0
-            End If
+            If _rdtEventsCookie = 0 Then Exit Sub
+            If _rdt IsNot Nothing Then VSErrorHandler.ThrowOnFailure(_rdt.UnadviseRunningDocTableEvents(_rdtEventsCookie))
+            _rdtEventsCookie = 0
         End Sub
 
         ''' <summary>
@@ -736,17 +707,13 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <param name="filename">The name of the document</param>
         ''' <returns>The document's cookie, or 0 if it's not in the RDT</returns>
         Private Function GetDocCookie(filename As String) As UInteger
-            If filename Is Nothing Then
-                Throw New ArgumentNullException("filename")
-            End If
+            If filename Is Nothing Then Throw New ArgumentNullException(NameOf(filename))
 
             Dim docCookie As UInteger = 0
-            Dim rdt4 As IVsRunningDocumentTable4 = TryCast(_rdt, IVsRunningDocumentTable4)
+            Dim rdt4 = TryCast(_rdt, IVsRunningDocumentTable4)
 
             If rdt4 IsNot Nothing Then
-                If rdt4.IsMonikerValid(filename) Then
-                    docCookie = rdt4.GetDocumentCookie(filename)
-                End If
+                If rdt4.IsMonikerValid(filename) Then docCookie = rdt4.GetDocumentCookie(filename)
             Else
                 Debug.Fail("Couldn't get running document table")
             End If
@@ -760,13 +727,11 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <param name="docCookie">The document's cookie</param>
         ''' <returns>The document's moniker</returns>
         Private Function GetDocumentMoniker(docCookie As UInteger) As String
-            Dim rdt4 As IVsRunningDocumentTable4 = TryCast(_rdt, IVsRunningDocumentTable4)
+            Dim rdt4 = TryCast(_rdt, IVsRunningDocumentTable4)
             Dim moniker As String = String.Empty
 
             If rdt4 IsNot Nothing Then
-                If rdt4.IsCookieValid(docCookie) Then
-                    moniker = rdt4.GetDocumentMoniker(docCookie)
-                End If
+                If rdt4.IsCookieValid(docCookie) Then moniker = rdt4.GetDocumentMoniker(docCookie)
             Else
                 Debug.Fail("Couldn't get running document table")
             End If
@@ -803,9 +768,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             If (_docCookie = 0) AndAlso ((attributes And __VSRDTATTRIB3.RDTA_DocumentInitialized) <> 0) AndAlso (_moniker.Length > 0) Then
                 Dim moniker As String = GetDocumentMoniker(docCookie)
 
-                If PathEquals(_moniker, moniker) Then
-                    _docCookie = docCookie
-                End If
+                If PathEquals(_moniker, moniker) Then _docCookie = docCookie
             End If
 
             ' if this change was for our document, see if anything interesting changed

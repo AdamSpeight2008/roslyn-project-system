@@ -42,8 +42,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         '   ErrorMessage: The text to display in the message box.
         '   HelpLink: Link to the help topic for this message box.
         '**************************************************************************
-        Friend Overloads Shared Sub ReportError(ServiceProvider As IServiceProvider, ErrorMessage As String,
-                HelpLink As String)
+        Friend Overloads Shared Sub ReportError(ServiceProvider As IServiceProvider, ErrorMessage As String, HelpLink As String)
 
 
             DesignerMessageBox.Show(ServiceProvider, ErrorMessage, GetDefaultCaption(ServiceProvider),
@@ -78,8 +77,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         'Returns:
         '   One of the DialogResult values.
         '**************************************************************************
-        Friend Overloads Shared Function ShowMessage(ServiceProvider As IServiceProvider, Message As String,
-                Caption As String, Buttons As MessageBoxButtons, Icon As MessageBoxIcon) As DialogResult
+        Friend Overloads Shared Function ShowMessage(ServiceProvider As IServiceProvider, Message As String, Caption As String, Buttons As MessageBoxButtons, Icon As MessageBoxIcon) As DialogResult
             Return DesignerMessageBox.Show(ServiceProvider, Message, Caption, Buttons, Icon)
         End Function 'ShowMessage
 
@@ -99,8 +97,8 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         '   One of the DialogResult values.
         '**************************************************************************
         Friend Overloads Shared Function ShowMessage(ServiceProvider As IServiceProvider, Message As String,
-                        Caption As String, Buttons As MessageBoxButtons, Icon As MessageBoxIcon,
-                        DefaultButton As MessageBoxDefaultButton) As DialogResult
+                                                     Caption As String, Buttons As MessageBoxButtons, Icon As MessageBoxIcon,
+                                                     DefaultButton As MessageBoxDefaultButton) As DialogResult
             Return DesignerMessageBox.Show(ServiceProvider, Message, Caption, Buttons, Icon, DefaultButton)
         End Function 'ShowMessage
 
@@ -113,13 +111,9 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         Friend Shared Function GetDefaultCaption(sp As IServiceProvider) As String
             Dim caption As String = String.Empty
             Dim uiShell As Microsoft.VisualStudio.Shell.Interop.IVsUIShell = Nothing
-            If sp IsNot Nothing Then
-                uiShell = DirectCast(sp.GetService(GetType(Microsoft.VisualStudio.Shell.Interop.IVsUIShell)), Microsoft.VisualStudio.Shell.Interop.IVsUIShell)
-            End If
+            If sp IsNot Nothing Then uiShell = DirectCast(sp.GetService(GetType(Microsoft.VisualStudio.Shell.Interop.IVsUIShell)), Microsoft.VisualStudio.Shell.Interop.IVsUIShell)
 
-            If uiShell Is Nothing OrElse Interop.NativeMethods.Failed(uiShell.GetAppName(caption)) Then
-                caption = SR.GetString(SR.DFX_Error_Default_Caption)
-            End If
+            If uiShell Is Nothing OrElse Interop.NativeMethods.Failed(uiShell.GetAppName(caption)) Then caption = SR.GetString(SR.DFX_Error_Default_Caption)
 
             Return caption
         End Function
@@ -249,15 +243,12 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <returns></returns>
         ''' <remarks></remarks>
         Friend Shared Function GenerateValidLanguageIndependentNamespace(value As String) As String
-            If value = String.Empty Then
-                Return value
-            Else
-                Dim subStrings() As String = value.Split(New Char() {"."c})
-                For index As Integer = 0 To subStrings.Length - 1
-                    subStrings(index) = GenerateValidLanguageIndependentIdentifier(subStrings(index))
-                Next
-                Return String.Join(".", subStrings)
-            End If
+            If value = String.Empty Then Return value
+            Dim subStrings() As String = value.Split(New Char() {"."c})
+            For index As Integer = 0 To subStrings.Length - 1
+                subStrings(index) = GenerateValidLanguageIndependentIdentifier(subStrings(index))
+            Next
+            Return String.Join(".", subStrings)
         End Function
 
         ''' <summary>
@@ -269,22 +260,16 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         Friend Shared Function GenerateValidLanguageIndependentIdentifier(value As String) As String
             Const replacementChar As Char = "_"c
 
-            If System.CodeDom.Compiler.CodeGenerator.IsValidLanguageIndependentIdentifier(value) Then
-                Return value
-            End If
+            If System.CodeDom.Compiler.CodeGenerator.IsValidLanguageIndependentIdentifier(value) Then Return value
 
             Dim chars() As Char = value.ToCharArray()
 
-            If chars.Length = 0 Then
-                Throw Common.CreateArgumentException(NameOf(value))
-            End If
+            If chars.Length = 0 Then Throw Common.CreateArgumentException(NameOf(value))
 
             Dim result As New System.Text.StringBuilder
 
             ' First char cannot be a number
-            If (Char.GetUnicodeCategory(chars(0)) = System.Globalization.UnicodeCategory.DecimalDigitNumber) Then
-                result.Append(replacementChar)
-            End If
+            If (Char.GetUnicodeCategory(chars(0)) = System.Globalization.UnicodeCategory.DecimalDigitNumber) Then result.Append(replacementChar)
 
             ' each char must be Lu, Ll, Lt, Lm, Lo, Nd, Mn, Mc, Pc
             ' 
@@ -329,9 +314,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 Dim userData As TextManager.Interop.IVsUserData = TryCast(dd.Buffer, TextManager.Interop.IVsUserData)
                 If userData IsNot Nothing Then
                     VSErrorHandler.ThrowOnFailure(userData.GetData(GUID_VsBufferEncodingVSTFF, oEncoding))
-                    If oEncoding IsNot Nothing Then
-                        Return System.Text.Encoding.GetEncoding(CInt(oEncoding) And TextManager.Interop.__VSTFF.VSTFF_CPMASK)
-                    End If
+                    If oEncoding IsNot Nothing Then Return System.Text.Encoding.GetEncoding(CInt(oEncoding) And TextManager.Interop.__VSTFF.VSTFF_CPMASK)
                 End If
             Catch ex As Exception When Common.ReportWithoutCrash(ex, NameOf(GetEncoding), NameOf(DesignUtil))
             End Try

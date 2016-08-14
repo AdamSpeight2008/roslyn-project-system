@@ -30,9 +30,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
 
                 'If the convert we got is just the standard converter, the codedom provider 
                 '  must not support this converter.  We're better off using defaults.
-                If converter.GetType() IsNot GetType(TypeConverter) OrElse Not converter.CanConvertTo(GetType(String)) Then
-                    _converter = converter
-                End If
+                If converter.GetType() IsNot GetType(TypeConverter) OrElse Not converter.CanConvertTo(GetType(String)) Then _converter = converter
             End If
         End Sub
 
@@ -45,17 +43,9 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         Public Function ConvertToString(accessibility As AccessModifierConverter.Access) As String
             Select Case accessibility
                 Case AccessModifierConverter.Access.Friend
-                    If _converter IsNot Nothing Then
-                        Return _converter.ConvertToString(MemberAttributes.Assembly)
-                    Else
-                        Return "Internal"
-                    End If
+                    Return If(_converter Is Nothing, "Internal", _converter.ConvertToString(MemberAttributes.Assembly))
                 Case AccessModifierConverter.Access.Public
-                    If _converter IsNot Nothing Then
-                        Return _converter.ConvertToString(MemberAttributes.Public)
-                    Else
-                        Return "Public"
-                    End If
+                    Return If(_converter Is Nothing, "Public", _converter.ConvertToString(MemberAttributes.Public))
                 Case Else
                     Throw Common.CreateArgumentException("AccessModifier")
             End Select
@@ -94,9 +84,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             Private _customToolValue As String
 
             Public Sub New(customToolValue As String)
-                If customToolValue Is Nothing Then
-                    Throw New ArgumentNullException(NameOf(customToolValue))
-                End If
+                If customToolValue Is Nothing Then Throw New ArgumentNullException(NameOf(customToolValue))
                 _customToolValue = customToolValue
             End Sub
 
@@ -115,10 +103,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
 
             Public Sub New(displayName As String, customToolValue As String)
                 MyBase.New(customToolValue)
-
-                If displayName Is Nothing Then
-                    Throw New ArgumentNullException(displayName)
-                End If
+                If displayName Is Nothing Then Throw New ArgumentNullException(displayName)
                 _displayName = displayName
             End Sub
 
@@ -138,10 +123,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             Public Sub New(accessibility As AccessModifierConverter.Access, serviceProvider As IServiceProvider, customToolValue As String)
                 MyBase.New(customToolValue)
 
-                If serviceProvider Is Nothing Then
-                    Throw New ArgumentNullException(NameOf(serviceProvider))
-                End If
-
+                If serviceProvider Is Nothing Then Throw New ArgumentNullException(NameOf(serviceProvider))
                 _accessibility = accessibility
                 _serviceProvider = serviceProvider
             End Sub
@@ -150,10 +132,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 Get
                     Dim codeDomProvider As CodeDomProvider = Nothing
                     Dim vsmdCodeDomProvider As IVSMDCodeDomProvider = TryCast(_serviceProvider.GetService(GetType(IVSMDCodeDomProvider)), IVSMDCodeDomProvider)
-                    If vsmdCodeDomProvider IsNot Nothing Then
-                        codeDomProvider = TryCast(vsmdCodeDomProvider.CodeDomProvider(), CodeDomProvider)
-                    End If
-
+                    If vsmdCodeDomProvider IsNot Nothing Then codeDomProvider = TryCast(vsmdCodeDomProvider.CodeDomProvider(), CodeDomProvider)
                     Return New AccessModifierConverter(codeDomProvider).ConvertToString(_accessibility)
                 End Get
             End Property
@@ -200,9 +179,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                     ' Remove previous active command (if any) and tell the shell that this is no longer the active 
                     ' command...
                     Dim previousCommand As DesignerMenuCommand = GetMenuCommandAtHeadOfInternalList(commandID)
-                    If previousCommand IsNot Nothing Then
-                        menuCommandService.RemoveCommand(previousCommand)
-                    End If
+                    If previousCommand IsNot Nothing Then menuCommandService.RemoveCommand(previousCommand)
 
                     ' Add the command to our internal list of commands...
                     AddMenuCommandForwarderToInternalList(commandID, forwarder)
@@ -218,9 +195,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 If menuCommandService IsNot Nothing Then
                     ' Remove the currently active command (if any) from the MenuCommandService
                     Dim previousCommand As DesignerMenuCommand = GetMenuCommandAtHeadOfInternalList(commandID)
-                    If previousCommand IsNot Nothing Then
-                        menuCommandService.RemoveCommand(previousCommand)
-                    End If
+                    If previousCommand IsNot Nothing Then menuCommandService.RemoveCommand(previousCommand)
 
                     ' Update our internal list of commands
                     RemoveMenuCommandForwarderFromInternalList(commandID, forwarder)
@@ -249,11 +224,8 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             ''' <remarks></remarks>
             Protected Shared Function GetMenuCommandAtHeadOfInternalList(cmdId As CommandId) As DesignerMenuCommand
                 Dim list As LinkedList(Of DesignerMenuCommand) = Nothing
-                If (Not s_packageCommandForwarderLists.TryGetValue(cmdId, list)) OrElse list Is Nothing OrElse list.Count = 0 Then
-                    Return Nothing
-                Else
-                    Return list.First.Value
-                End If
+                If (Not s_packageCommandForwarderLists.TryGetValue(cmdId, list)) OrElse list Is Nothing OrElse list.Count = 0 Then Return Nothing
+                Return list.First.Value
             End Function
 
             ''' <summary>
@@ -274,7 +246,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 list.Remove(command)
                 list.AddFirst(command)
 
-                Debug.Assert(list.Count > 0, "We just added a menu command to the list - how come it is empty!")
+                Debug.Assert(list.Count > 0, "We just added a menu command to the list - how come it Is empty!")
             End Sub
 
 
@@ -284,13 +256,8 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             ''' <remarks></remarks>
             Protected Shared Sub RemoveMenuCommandForwarderFromInternalList(cmdId As CommandId, command As DesignerMenuCommand)
                 Dim list As LinkedList(Of DesignerMenuCommand) = Nothing
-                If s_packageCommandForwarderLists.TryGetValue(cmdId, list) Then
-                    list.Remove(command)
-                End If
-
-                If list IsNot Nothing AndAlso list.Count = 0 Then
-                    s_packageCommandForwarderLists.Remove(cmdId)
-                End If
+                If s_packageCommandForwarderLists.TryGetValue(cmdId, list) Then list.Remove(command)
+                If list IsNot Nothing AndAlso list.Count = 0 Then s_packageCommandForwarderLists.Remove(cmdId)
             End Sub
 
         End Class
@@ -313,16 +280,9 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' </param>
         ''' <remarks></remarks>
         Public Sub New(rootDesigner As BaseRootDesigner, serviceProvider As IServiceProvider, projectItem As EnvDTE.ProjectItem, namespaceToOverrideIfCustomToolIsEmpty As String)
-            If rootDesigner Is Nothing Then
-                Throw New ArgumentNullException(NameOf(rootDesigner))
-            End If
-            If projectItem Is Nothing Then
-                Throw New ArgumentNullException(NameOf(projectItem))
-            End If
-            If serviceProvider Is Nothing Then
-                Throw New ArgumentNullException(NameOf(serviceProvider))
-            End If
-
+            If rootDesigner Is Nothing Then Throw New ArgumentNullException(NameOf(rootDesigner))
+            If projectItem Is Nothing Then Throw New ArgumentNullException(NameOf(projectItem))
+            If serviceProvider Is Nothing Then Throw New ArgumentNullException(NameOf(serviceProvider))
             _rootDesigner = rootDesigner
             _projectItem = projectItem
             _serviceProvider = serviceProvider
@@ -405,27 +365,18 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             value = Nothing
 
             Dim ToolProperty As EnvDTE.Property = DTEUtils.GetProjectItemProperty(_projectItem, DTEUtils.PROJECTPROPERTY_CUSTOMTOOL)
-            If ToolProperty IsNot Nothing Then
-                Dim CurrentCustomToolValue As String = TryCast(ToolProperty.Value, String)
-                value = CurrentCustomToolValue
-                Return True
-            End If
-
-            Return False
+            If ToolProperty Is Nothing Then Return False
+            Dim CurrentCustomToolValue As String = TryCast(ToolProperty.Value, String)
+            value = CurrentCustomToolValue
+            Return True
         End Function
 
         ''' <summary>
         ''' Return the current accessibility value
         ''' </summary>
         Private Function GetCurrentValue() As String
-            Dim currentValue As String
             Dim matchingEntry As CodeGenerator = GetCurrentMatchingGenerator()
-            If matchingEntry IsNot Nothing Then
-                currentValue = matchingEntry.DisplayName
-            Else
-                currentValue = SR.GetString(SR.RSE_AccessModifier_Custom)
-            End If
-
+            Dim currentValue As String = If matchingEntry IsNot Nothing, matchingEntry.DisplayName,SR.GetString(SR.RSE_AccessModifier_Custom))
             Switches.TracePDAccessModifierCombobox(TraceLevel.Verbose, NameOf(GetCurrentValue) & ": " & Me.GetType.Name & ": " & currentValue)
             Return currentValue
         End Function
@@ -437,9 +388,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             Dim customToolValue As String = Nothing
             If TryGetCustomToolPropertyValue(customToolValue) Then
                 For Each entry As CodeGenerator In _codeGeneratorEntries
-                    If entry.CustomToolValue.Equals(customToolValue, StringComparison.OrdinalIgnoreCase) Then
-                        Return entry
-                    End If
+                    If entry.CustomToolValue.Equals(customToolValue, StringComparison.OrdinalIgnoreCase) Then Return entry
                 Next
             End If
 
@@ -536,14 +485,9 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <returns></returns>
         ''' <remarks></remarks>
         Protected Overridable Function ShouldBeEnabled() As Boolean
-            If Not IsDesignerEditable() Then
-                Return False
-            End If
-
+            If Not IsDesignerEditable() Then Return False
             ' If the custom tool(s) aren't registered, we don't enable the combobox...
-            If Not CustomToolRegistered Then
-                Return False
-            End If
+            If Not CustomToolRegistered Then Return False
 
             Dim customToolValue As String = Nothing
             If Not TryGetCustomToolPropertyValue(customToolValue) Then
@@ -557,10 +501,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             '  it and won't easily be able to get back the original value.  This is an advanced 
             '  scenario, and the advanced user can change this value directly in the property sheet
             '  if really needed.
-            If customToolValue <> String.Empty AndAlso Not _recognizedCustomToolValues.Contains(customToolValue) Then
-                Return False
-            End If
-
+            If customToolValue <> String.Empty AndAlso Not _recognizedCustomToolValues.Contains(customToolValue) Then Return False
             'Otherwise, we can enable it.
             Return True
         End Function
@@ -602,12 +543,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
 #Region "IDisposable"
 
         Protected Overridable Sub Dispose(disposing As Boolean)
-            If Not _isDisposed Then
-                If disposing Then
-                    UnregisterMenuCommandForwarder()
-                End If
-            End If
-
+            If Not _isDisposed AndAlso disposing Then UnregisterMenuCommandForwarder()
             _isDisposed = True
         End Sub
 

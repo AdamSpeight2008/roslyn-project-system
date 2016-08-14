@@ -383,11 +383,8 @@ Namespace Microsoft.VisualStudio.Editors.Common
                     MsgType = "WM_SYSCHAR"
 
                 Case Else
-                    If PDMessageRouting.Level >= TraceLevel.Verbose Then
-                        MsgType = "0x" & Microsoft.VisualBasic.Hex(msg.Msg)
-                    Else
-                        Return Nothing
-                    End If
+                    If PDMessageRouting.Level < TraceLevel.Verbose Then Return Nothing
+                    MsgType = "0x" & Microsoft.VisualBasic.Hex(msg.Msg)
             End Select
             str.Append("MSG{" & MsgType & ", HWND=0x" & VB.Hex(msg.HWnd.ToInt32))
 
@@ -412,10 +409,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
         Friend Shared Function TimeCode() As String
 #If DEBUG Then
-            If Not s_firstTimeCodeTaken Then
-                ResetTimeCode()
-            End If
-
+            If Not s_firstTimeCodeTaken Then ResetTimeCode()
             Dim ts As TimeSpan = Microsoft.VisualBasic.Now.Subtract(s_timeCodeStart)
             Return ts.TotalSeconds.ToString("0000.00000") & VB.vbTab
             'Return n.ToString("hh:mm:ss.") & Microsoft.VisualBasic.Format(n.Millisecond, "000") & VB.vbTab
@@ -627,9 +621,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                 Trace.WriteLine("  AffectedControl=" & DebugToString(e.AffectedControl))
                 Trace.WriteLine("  AffectedComponent=" & DebugToString(e.AffectedComponent))
                 Trace.WriteLine("  AffectedProperty=" & DebugToString(e.AffectedProperty))
-                If PDPerf.TraceVerbose Then
-                    Trace.WriteLine(New System.Diagnostics.StackTrace().ToString)
-                End If
+                If PDPerf.TraceVerbose Then Trace.WriteLine(New System.Diagnostics.StackTrace().ToString)
             End If
         End Sub
 #End If
@@ -660,12 +652,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
         <Conditional("DEBUG")> _
         Public Shared Sub TracePDMessageRouting(TraceLevel As TraceLevel, Message As String, msg As Windows.Forms.Message)
 #If DEBUG Then
-            If PDMessageRouting.Level >= TraceLevel Then
-                Dim FormattedMessage As String = FormatWin32Message(msg)
-                If FormattedMessage IsNot Nothing Then
-                    Trace.WriteLine(NameOf(PDMessageRouting) & ": " & Message & ": " & FormattedMessage)
-                End If
-            End If
+            If PDMessageRouting.Level < TraceLevel Then Exit Sub
+            Dim FormattedMessage As String = FormatWin32Message(msg)
+            If FormattedMessage IsNot Nothing Then Trace.WriteLine(NameOf(PDMessageRouting) & ": " & Message & ": " & FormattedMessage)
 #End If
         End Sub
 

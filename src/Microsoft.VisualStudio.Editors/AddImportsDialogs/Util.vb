@@ -9,15 +9,10 @@ Namespace Microsoft.VisualStudio.Editors.AddImports
             Dim i As Integer = 0
 
             While i < input.Length
-                If (input(i) = "&"c) Then
-                    If (i + 1 < input.Length) Then
-                        If (input(i + 1) <> "&"c) Then
-                            Exit While
-                        Else
-                            i += 2
-                            Continue While
-                        End If
-                    End If
+                If (input(i) = "&"c) AndAlso (i + 1 < input.Length) Then
+                    If (input(i + 1) <> "&"c) Then Exit While
+                    i += 2
+                    Continue While
                 End If
                 i += 1
             End While
@@ -26,14 +21,10 @@ Namespace Microsoft.VisualStudio.Editors.AddImports
                 mnemonicChar = input(i + 1)
 
                 Dim first As String = String.Empty
-                If (i > 0) Then
-                    first = input.Substring(0, i)
-                End If
+                If (i > 0) Then first = input.Substring(0, i)
 
                 Dim second As String = String.Empty
-                If (i < input.Length - 2) Then
-                    second = input.Substring(i + 2, input.Length - i - 2)
-                End If
+                If (i < input.Length - 2) Then second = input.Substring(i + 2, input.Length - i - 2)
             End If
 
             Return mnemonicChar
