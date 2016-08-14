@@ -10,9 +10,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         Inherits System.Xml.Serialization.XmlSerializationWriter
         Public Sub Write2_MyApplicationData(n As String, ns As String, o As Microsoft.VisualStudio.Editors.MyApplication.MyApplicationData, isNullable As Boolean, needType As Boolean)
             If o Is Nothing Then
-                If isNullable Then
-                    WriteNullTagLiteral(n, ns)
-                End If
+                If isNullable Then WriteNullTagLiteral(n, ns)
                 Return
             End If
             If Not needType Then
@@ -57,9 +55,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         Private _hashTableLock As New Object
 
         Public Function GetPublicMethods() As System.Collections.Hashtable
-            If _publicMethods Is Nothing Then
-                _publicMethods = New System.Collections.Hashtable()
-            End If
+            _publicMethods = If(_publicMethods, New System.Collections.Hashtable())
             Return _publicMethods
         End Function 'GetPublicMethods
 
@@ -78,33 +74,25 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
 
             Dim isNull As Boolean = False
 
-            If isNullable Then
-                isNull = ReadNull()
-            End If
+            If isNullable Then isNull = ReadNull()
 
             If checkType Then
-                If isNull AndAlso Not (xsiType Is Nothing) Then
-                    Return CType(ReadTypedNull(xsiType), Microsoft.VisualStudio.Editors.MyApplication.MyApplicationData)
-                End If
+                If isNull AndAlso Not (xsiType Is Nothing) Then Return CType(ReadTypedNull(xsiType), Microsoft.VisualStudio.Editors.MyApplication.MyApplicationData)
                 If (xsiType Is Nothing) OrElse (CType(xsiType, System.Xml.XmlQualifiedName).Name = _id1_MyApplicationData AndAlso CType(xsiType, System.Xml.XmlQualifiedName).Namespace = _id2_Item) Then
                 Else
                     Throw CreateUnknownTypeException(CType(xsiType, System.Xml.XmlQualifiedName))
                 End If
             End If
 
-            If isNull Then
-                Return Nothing
-            End If
+            If isNull Then Return Nothing
+
             DecodeName = True
 
-            Dim o As Microsoft.VisualStudio.Editors.MyApplication.MyApplicationData
-            o = New Microsoft.VisualStudio.Editors.MyApplication.MyApplicationData()
+            Dim o As New Microsoft.VisualStudio.Editors.MyApplication.MyApplicationData()
             Dim paramsRead(8) As Boolean
 
             While Reader.MoveToNextAttribute()
-                If Not IsXmlnsAttribute(Reader.Name) Then
-                    UnknownNode(CType(o, Object))
-                End If
+                If Not IsXmlnsAttribute(Reader.Name) Then UnknownNode(CType(o, Object))
             End While
 
             Reader.MoveToElement()
@@ -117,8 +105,11 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
             Reader.ReadStartElement()
             Reader.MoveToContent()
 
-            While Reader.NodeType <> System.Xml.XmlNodeType.EndElement AndAlso Reader.NodeType <> System.Xml.XmlNodeType.None
+            While Reader.NodeType <> System.Xml.XmlNodeType.EndElement AndAlso
+                  Reader.NodeType <> System.Xml.XmlNodeType.None
+
                 If Reader.NodeType = System.Xml.XmlNodeType.Element Then
+
                     If Not paramsRead(0) AndAlso (Reader.LocalName = _id3_MySubMain AndAlso Reader.NamespaceURI = _id2_Item) Then
                         o.MySubMain = System.Xml.XmlConvert.ToBoolean(Reader.ReadElementString())
                         paramsRead(0) = True
@@ -237,9 +228,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         private _lockObject as New Object
 
         Public Function GetPublicMethods() As System.Collections.Hashtable
-            If _publicMethods Is Nothing Then
-                _publicMethods = New System.Collections.Hashtable()
-            End If
+            _publicMethods = If(_publicMethods, New System.Collections.Hashtable())
             Return _publicMethods
         End Function 'GetPublicMethods 
     End Class 'MyApplicationDataSerializationReader

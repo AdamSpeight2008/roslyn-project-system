@@ -120,9 +120,7 @@ Namespace Microsoft.Internal.Performance
         ' Implements sending the code marker value nTimerID.
         ' Implements sending the code marker value nTimerID.
         Public Sub CodeMarker(nTimerID As Integer)
-            If Not _fUseCodeMarkers Then
-                Return
-            End If
+            If Not _fUseCodeMarkers Then Return
             Try
                 If ShouldUseTestDll Then
                     NativeMethods.TestDllPerfCodeMarker(nTimerID, 0, 0)
@@ -150,17 +148,12 @@ Namespace Microsoft.Internal.Performance
         ' Reads the Performance subkey from the appropriate registry key
         ' Returns: the Default value from the subkey (null if not found)
         Private Shared Function GetPerformanceSubKey(hKey As RegistryKey, strRegRoot As String) As String
-            If hKey Is Nothing Then
-                Return Nothing
-            End If
+            If hKey Is Nothing Then Return Nothing
 
             ' does the subkey exist
             Dim str As String = Nothing
             Using key As RegistryKey = hKey.OpenSubKey(strRegRoot & "\Performance")
-                If Not key Is Nothing Then
-                    ' reads the default value
-                    str = key.GetValue(String.Empty).ToString()
-                End If
+                If key IsNot Nothing Then str = key.GetValue(String.Empty).ToString() ' reads the default value
             End Using
             Return str
         End Function 'SubKeyExist
