@@ -112,10 +112,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                 BufPtr = IntPtr.Zero
                 Return NativeMethods.S_OK
             Catch e As Exception
-                If Not BufPtr.Equals(IntPtr.Zero) Then
-                    Marshal.FreeCoTaskMem(BufPtr)
-                End If
-
+                If Not BufPtr.Equals(IntPtr.Zero) Then Marshal.FreeCoTaskMem(BufPtr)
                 If pGenerateProgress IsNot Nothing Then
                     VSErrorHandler.ThrowOnFailure(pGenerateProgress.GeneratorError(0, 1, SR.GetString(SR.SingleFileGenerator_FailedToGenerateFile_1Arg, e.Message), 0, 0))
                 End If
@@ -153,13 +150,14 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                 Dim GeneratedType As New CodeTypeDeclaration("MyApplication")
 
                 'Add comments 
-                Dim Comments() As String = { _
-                    SR.GetString(SR.PPG_Application_MyAppCommentLine1), _
-                    SR.GetString(SR.PPG_Application_MyAppCommentLine2), _
-                    SR.GetString(SR.PPG_Application_MyAppCommentLine3), _
-                    SR.GetString(SR.PPG_Application_MyAppCommentLine4), _
-                    SR.GetString(SR.PPG_Application_MyAppCommentLine5) _
-                }
+                Dim Comments() As String = {
+                                             SR.GetString(SR.PPG_Application_MyAppCommentLine1),
+                                             SR.GetString(SR.PPG_Application_MyAppCommentLine2),
+                                             SR.GetString(SR.PPG_Application_MyAppCommentLine3),
+                                             SR.GetString(SR.PPG_Application_MyAppCommentLine4),
+                                             SR.GetString(SR.PPG_Application_MyAppCommentLine5)
+                                           }
+
                 For i As Integer = 0 To Comments.Length - 1
                     GeneratedType.Comments.Add(New CodeCommentStatement(Comments(i)))
                 Next
@@ -179,7 +177,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                 '    <Global.System.Diagnostics.DebuggerStepThrough()> _
                 '    Public Sub New()
                 '
-                Dim Constructor As CodeConstructor = New CodeConstructor()
+                Dim Constructor As New CodeConstructor()
                 Constructor.Attributes = MemberAttributes.Public
                 AddAttribute(Constructor, DebuggerStepThroughAttribute, True)
 
@@ -207,15 +205,15 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                 AddFieldPrimitiveAssignment(Constructor, "SaveMySettingsOnExit", MyApplication.SaveMySettingsOnExit)
 
                 '
-                Dim EnumType As Type
-                EnumType = GetType(Microsoft.VisualBasic.ApplicationServices.ShutdownMode)
-                If MyApplication.ShutdownMode = Microsoft.VisualBasic.ApplicationServices.ShutdownMode.AfterAllFormsClose Then
-                    AddFieldAssignment(Constructor, "ShutDownStyle", EnumType, "AfterAllFormsClose")
-                ElseIf MyApplication.ShutdownMode = Microsoft.VisualBasic.ApplicationServices.ShutdownMode.AfterMainFormCloses Then
-                    AddFieldAssignment(Constructor, "ShutDownStyle", EnumType, "AfterMainFormCloses")
-                Else
-                    Debug.Fail("Unexpected MyApplication.ShutdownMode")
-                End If
+                Dim EnumType As Type = GetType(Microsoft.VisualBasic.ApplicationServices.ShutdownMode)
+                Select Case MyApplication.ShutdownMode
+                    Case ApplicationServices.ShutdownMode.AfterAllFormsClose
+                        AddFieldAssignment(Constructor, "ShutDownStyle", EnumType, "AfterAllFormsClose")
+                    Case ApplicationServices.ShutdownMode.AfterMainFormCloses
+                        AddFieldAssignment(Constructor, "ShutDownStyle", EnumType, "AfterMainFormCloses")
+                    Case Else
+                        Debug.Fail("Unexpected MyApplication.ShutdownMode")
+                End Select
 
                 GeneratedType.Members.Add(Constructor)
 
@@ -244,7 +242,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
 
                     If invalidIdentifier Then
                         Dim errorMsg As String = SR.GetString(SR.PPG_Application_InvalidIdentifierStartupForm_1Arg, MyApplication.MainFormNoRootNS)
-                        If Not pGenerateProgress Is Nothing Then
+                        If pGenerateProgress IsNot Nothing Then
                             VSErrorHandler.ThrowOnFailure(pGenerateProgress.GeneratorError(0,
                                                                                            1,
                                                                                            SR.GetString(SR.SingleFileGenerator_FailedToGenerateFile_1Arg, errorMsg),
@@ -276,7 +274,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
 
                     If Not CodeDomProvider.IsValidIdentifier(MyApplication.SplashScreenNoRootNS) Then
                         Dim errorMsg As String = SR.GetString(SR.PPG_Application_InvalidIdentifierSplashScreenForm_1Arg, MyApplication.SplashScreenNoRootNS)
-                        If Not pGenerateProgress Is Nothing Then
+                        If pGenerateProgress IsNot Nothing Then
                             VSErrorHandler.ThrowOnFailure(pGenerateProgress.GeneratorError(0,
                                                                                            1,
                                                                                            SR.GetString(SR.SingleFileGenerator_FailedToGenerateFile_1Arg, errorMsg),
@@ -312,9 +310,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' <remarks></remarks>
         Private Shared Sub AddAttribute(Member As CodeTypeMember, AttributeType As Type, PrependGlobal As Boolean)
 
-            If Member.CustomAttributes Is Nothing Then
-                Member.CustomAttributes = New CodeAttributeDeclarationCollection()
-            End If
+            Member.CustomAttributes = If(Member.CustomAttributes, New CodeAttributeDeclarationCollection())
 
             Dim AttributeReference As CodeTypeReference
             If PrependGlobal Then
@@ -328,30 +324,23 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
 
         ' Adds a statement to 'Method' in the form of ' FieldName = Expression ' 
         Private Shared Sub AddFieldAssignment(Method As CodeMemberMethod, FieldName As String, Expression As CodeExpression)
-            Dim Statement As CodeAssignStatement
-            Statement = New CodeAssignStatement()
-            Statement.Left = New CodeDom.CodeFieldReferenceExpression(New CodeThisReferenceExpression(), FieldName)
-            Statement.Right = Expression
+            Dim Statement As New CodeAssignStatement(New CodeDom.CodeFieldReferenceExpression(New CodeThisReferenceExpression(), FieldName), Expression)
             Method.Statements.Add(Statement)
         End Sub
 
         ' Adds a statement to 'Method' in the form of ' FieldName = Value ' 
         Private Shared Sub AddFieldPrimitiveAssignment(Method As CodeMemberMethod, FieldName As String, Value As Object)
-            Dim Statement As CodeAssignStatement
-            Statement = New CodeAssignStatement()
-            Statement.Left = New CodeDom.CodeFieldReferenceExpression(New CodeThisReferenceExpression(), FieldName)
-            Statement.Right = New CodeDom.CodePrimitiveExpression(Value)
+            Dim Statement As New CodeAssignStatement(New CodeDom.CodeFieldReferenceExpression(New CodeThisReferenceExpression(), FieldName),
+                                                     New CodeDom.CodePrimitiveExpression(Value))
             Method.Statements.Add(Statement)
         End Sub
 
         ' Adds a statement to 'Method' in the form of ' FieldName = EnumType.EnumField ' 
         Private Shared Sub AddFieldAssignment(Method As CodeMemberMethod, FieldName As String, EnumType As Type, EnumFieldName As String)
-            Dim Statement As CodeAssignStatement
-            Statement = New CodeAssignStatement()
+            Dim Statement As New CodeAssignStatement()
             Statement.Left = New CodeDom.CodeFieldReferenceExpression(New CodeThisReferenceExpression(), FieldName)
 
-            Dim TypeRef As CodeTypeReference
-            TypeRef = New CodeTypeReference(EnumType)
+            Dim TypeRef As New CodeTypeReference(EnumType)
             TypeRef.Options = CodeTypeReferenceOptions.GlobalReference
 
             Dim value1 As New CodeFieldReferenceExpression(New CodeTypeReferenceExpression(TypeRef), EnumFieldName)
@@ -373,9 +362,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
             '      Me.MainForm = Global.WindowsApplication1.FormXXX
             '
             Debug.Assert(FieldName IsNot Nothing)
-            If FormNameWithoutRootNamespace Is Nothing Then
-                FormNameWithoutRootNamespace = String.Empty
-            End If
+            FormNameWithoutRootNamespace = If(FormNameWithoutRootNamespace, String.Empty)
 
             If RootNamespace Is Nothing Then
                 AddFieldAssignment(Method, FieldName, New CodeTypeReferenceExpression(New CodeTypeReference(FormNameWithoutRootNamespace)))
@@ -395,14 +382,13 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
             Dim Hierarchy As IVsHierarchy = DirectCast(GetService(GetType(IVsHierarchy)), IVsHierarchy)
             Debug.Assert(Hierarchy IsNot Nothing, "Failed to get a Hierarchy item for item to generate code from")
             Dim data As MyApplicationData = Nothing
+
             If InputString <> String.Empty Then
                 ' We actually have some contents to deserialize.... 
                 Dim MyApplicationReader As New StringReader(InputString)
                 data = MyApplicationSerializer.Deserialize(MyApplicationReader)
             End If
-            If data Is Nothing Then
-                data = New MyApplicationData()
-            End If
+            data = If(data, New MyApplicationData())
             Return data
         End Function
 
@@ -423,9 +409,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                 Return _codeDomProvider
             End Get
             Set(Value As CodeDomProvider)
-                If Value Is Nothing Then
-                    Throw New ArgumentNullException()
-                End If
+                If Value Is Nothing Then Throw New ArgumentNullException()
                 _codeDomProvider = Value
             End Set
         End Property
@@ -462,9 +446,8 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                             Dim RootNSObject As Object = Nothing
 
                             VsHierarchy.GetProperty(VsItemId, CInt(__VSHPROPID.VSHPROPID_DefaultNamespace), RootNSObject)
-                            If TypeOf RootNSObject Is String Then
-                                Return DirectCast(RootNSObject, String)
-                            End If
+                            If TypeOf RootNSObject Is String Then Return DirectCast(RootNSObject, String)
+
                         End If
                     End If
                 End If
@@ -479,19 +462,14 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
 
 #Region "IObjectWithSite implementation"
         Private Sub GetSite(ByRef riid As System.Guid, ByRef ppvSite As System.IntPtr) Implements OLE.Interop.IObjectWithSite.GetSite
-            If _site Is Nothing Then
-                ' Throw E_FAIL
-                Throw New Win32Exception(NativeMethods.E_FAIL)
-            End If
+            If _site Is Nothing Then Throw New Win32Exception(NativeMethods.E_FAIL)
 
             Dim pUnknownPointer As IntPtr = Marshal.GetIUnknownForObject(_site)
             Try
                 Marshal.QueryInterface(pUnknownPointer, riid, ppvSite)
 
-                If ppvSite = IntPtr.Zero Then
-                    ' throw E_NOINTERFACE
-                    Throw New Win32Exception(NativeMethods.E_NOINTERFACE)
-                End If
+                If ppvSite = IntPtr.Zero Then Throw New Win32Exception(NativeMethods.E_NOINTERFACE)
+
             Finally
                 If (pUnknownPointer <> IntPtr.Zero) Then
                     Marshal.Release(pUnknownPointer)
@@ -523,21 +501,21 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
 
             Dim designerPrjItem As ProjectItem = Me.GetDesignerProjectItem(phier, itemId)
             If (designerPrjItem IsNot Nothing) Then
+
                 Dim applicationData As MyApplicationData = Nothing
-                Using dd As New Microsoft.VisualStudio.Shell.Design.Serialization.DocData(Common.Utils.ServiceProviderFromHierarchy(phier), designerPrjItem.FileNames(1))
+                Using dd As New Shell.Design.Serialization.DocData(Common.Utils.ServiceProviderFromHierarchy(phier), designerPrjItem.FileNames(1))
                     applicationData = Me.GetApplicationData(dd)
                 End Using
+
                 If (applicationData IsNot Nothing) Then
                     Dim oldSymbolName As String = Me.GetSymbolNameNoRootNamespace(rglpszRQName(0), designerPrjItem.ContainingProject)
                     If (oldSymbolName IsNot Nothing) Then
                         ' if the old class name matches the MainForm name or the SplashScreen name modify it.
                         Dim comparisonType As StringComparison = StringComparison.OrdinalIgnoreCase
-                        If (designerPrjItem.ContainingProject.CodeModel.IsCaseSensitive) Then
-                            comparisonType = StringComparison.Ordinal
-                        End If
+                        If (designerPrjItem.ContainingProject.CodeModel.IsCaseSensitive) Then comparisonType = StringComparison.Ordinal
 
-                        If (String.Equals(oldSymbolName, applicationData.MainFormNoRootNS, comparisonType) _
-                            Or String.Equals(oldSymbolName, applicationData.SplashScreenNoRootNS, comparisonType)) Then
+                        If (String.Equals(oldSymbolName, applicationData.MainFormNoRootNS, comparisonType) OrElse
+                            String.Equals(oldSymbolName, applicationData.SplashScreenNoRootNS, comparisonType)) Then
                             changesRequired = True
                         End If
                     End If
@@ -580,20 +558,17 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
                     Using dd As New Microsoft.VisualStudio.Shell.Design.Serialization.DocData(Common.Utils.ServiceProviderFromHierarchy(phier), designerPrjItem.FileNames(1))
                         Dim data As MyApplicationData = Me.GetApplicationData(dd)
                         If (data IsNot Nothing) Then
+
                             Dim oldSymbolName As String = Me.GetSymbolNameNoRootNamespace(rglpszRQName(0), designerPrjItem.ContainingProject)
                             If (oldSymbolName IsNot Nothing) Then
                                 Dim namespaceNoClass As String = String.Empty
                                 Dim i As Integer = oldSymbolName.LastIndexOf(".")
-                                If i >= 0 Then
-                                    namespaceNoClass = oldSymbolName.Substring(0, i + 1)
-                                End If
+                                If i >= 0 Then namespaceNoClass = oldSymbolName.Substring(0, i + 1)
 
                                 Dim madeChanges As Boolean = False
                                 ' if the old class name matches the MainForm name or the SplashScreen name modify it.
                                 Dim comparisonType As StringComparison = StringComparison.OrdinalIgnoreCase
-                                If (designerPrjItem.ContainingProject.CodeModel.IsCaseSensitive) Then
-                                    comparisonType = StringComparison.Ordinal
-                                End If
+                                If (designerPrjItem.ContainingProject.CodeModel.IsCaseSensitive) Then comparisonType = StringComparison.Ordinal
 
                                 If (String.Equals(oldSymbolName, data.MainFormNoRootNS, comparisonType)) Then
                                     data.MainFormNoRootNS = namespaceNoClass + lpszNewName
@@ -747,11 +722,11 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' </summary>
         ''' <param name="dd">the DocData to load the ApplicationData from</param>
         ''' <returns>the ApplicationData loaded from the ProjectItem</returns>
-        Private Function GetApplicationData(dd As Microsoft.VisualStudio.Shell.Design.Serialization.DocData) As MyApplicationData
+        Private Function GetApplicationData(dd As Shell.Design.Serialization.DocData) As MyApplicationData
             Dim data As MyApplicationData = Nothing
             If (dd IsNot Nothing) Then
                 ' read the content of this ProjectItem into a MyApplicationData object
-                Using myApplicationReader As New Microsoft.VisualStudio.Shell.Design.Serialization.DocDataTextReader(dd)
+                Using myApplicationReader As New Shell.Design.Serialization.DocDataTextReader(dd)
                     data = MyApplicationSerializer.Deserialize(myApplicationReader)
                 End Using
             End If
@@ -770,13 +745,10 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
 
             ' if the symbol name starts with the current project's root namespace, remove it
             Dim namespaceProperty As EnvDTE.Property = currentProject.Properties.Item("RootNamespace")
-            If (namespaceProperty IsNot Nothing) Then
-                Dim rootNamespace As String = DirectCast(namespaceProperty.Value, String)
-                If (symbolName IsNot Nothing AndAlso symbolName.StartsWith(rootNamespace)) Then
-                    symbolName = symbolName.Substring(rootNamespace.Length + 1)
-                End If
-            End If
+            If (namespaceProperty Is Nothing) Then Return symbolName
 
+            Dim rootNamespace As String = DirectCast(namespaceProperty.Value, String)
+            If (symbolName IsNot Nothing) AndAlso symbolName.StartsWith(rootNamespace) Then symbolName = symbolName.Substring(rootNamespace.Length + 1)
             Return symbolName
         End Function
 
@@ -791,11 +763,8 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' <returns>An instance of the service, or nothing if service not found</returns>
         ''' <remarks></remarks>
         Private Function GetService(serviceType As System.Type) As Object Implements System.IServiceProvider.GetService
-            If ServiceProvider IsNot Nothing Then
-                Return ServiceProvider.GetService(serviceType)
-            Else
-                Return Nothing
-            End If
+            If ServiceProvider Is Nothing Then Return Nothing
+            Return ServiceProvider.GetService(serviceType)
         End Function
 
         ''' <summary>
@@ -805,11 +774,7 @@ Namespace Microsoft.VisualStudio.Editors.MyApplication
         ''' <remarks></remarks>
         Private ReadOnly Property ServiceProvider() As ServiceProvider
             Get
-                If _serviceProvider Is Nothing Then
-                    Dim OleSp As OLE.Interop.IServiceProvider = CType(_site, OLE.Interop.IServiceProvider)
-                    _serviceProvider = New ServiceProvider(OleSp)
-                End If
-                Return _serviceProvider
+                Return If(_serviceProvider, New ServiceProvider(CType(_site, OLE.Interop.IServiceProvider)))
             End Get
         End Property
 
