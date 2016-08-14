@@ -28,11 +28,16 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <param name="Caption">The text to display in the title bar of the message box.</param>
         ''' <param name="HelpLink">Link to the help topic for this message box.</param>
         ''' <remarks></remarks>
-        Friend Shared Function Show(RootDesigner As BaseRootDesigner, Message As String, _
-                Caption As String, Buttons As MessageBoxButtons, Icon As MessageBoxIcon, _
-                Optional DefaultButton As MessageBoxDefaultButton = MessageBoxDefaultButton.Button1, _
-                Optional HelpLink As String = Nothing _
-        ) As DialogResult
+        Friend Shared Function Show(
+                                     RootDesigner As BaseRootDesigner,
+                                     Message As String,
+                                     Caption As String,
+                                     Buttons As MessageBoxButtons,
+                                     Icon As MessageBoxIcon,
+                            Optional DefaultButton As MessageBoxDefaultButton = MessageBoxDefaultButton.Button1,
+                            Optional HelpLink As String = Nothing
+                                   ) As DialogResult
+
             Return Show(DirectCast(RootDesigner, IServiceProvider), Message, Caption, Buttons, Icon, DefaultButton, HelpLink)
         End Function 'Show
 
@@ -45,8 +50,9 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <param name="Caption">The text to display in the title bar of the message box.</param>
         ''' <param name="HelpLink">Link to the help topic for this message box.</param>
         ''' <remarks></remarks>
-        Friend Shared Sub Show(ServiceProvider As IServiceProvider, ex As Exception, _
-                Caption As String, Optional HelpLink As String = Nothing)
+        Friend Shared Sub Show(ServiceProvider As IServiceProvider, ex As Exception, Caption As String,
+                       Optional HelpLink As String = Nothing
+                              )
             Show(ServiceProvider, Nothing, ex, Caption, HelpLink)
         End Sub
 
@@ -62,8 +68,8 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <remarks>
         ''' The exception's message will be on a second line after errorMessage.
         ''' </remarks>
-        Friend Shared Sub Show(ServiceProvider As IServiceProvider, Message As String, ex As Exception, _
-                Caption As String, Optional HelpLink As String = Nothing)
+        Friend Shared Sub Show(ServiceProvider As IServiceProvider, Message As String, ex As Exception, Caption As String,
+                      Optional HelpLink As String = Nothing)
 
             If ex Is Nothing Then
                 Debug.Fail(NameOf(ex) & " should not be Nothing")
@@ -71,9 +77,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             End If
 
             'Pull out the original exception from target invocation exceptions (happen during serialization, etc.)
-            If TypeOf ex Is TargetInvocationException Then
-                ex = ex.InnerException
-            End If
+            If TypeOf ex Is TargetInvocationException Then ex = ex.InnerException
 
             If Common.Utils.IsCheckoutCanceledException(ex) Then
                 'The user knows he just canceled the checkout.  We don't have to tell him.  (Yes, other editors and the
@@ -81,9 +85,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 Return
             End If
 
-            If HelpLink = String.Empty AndAlso ex IsNot Nothing Then
-                HelpLink = ex.HelpLink
-            End If
+            If (HelpLink = String.Empty) AndAlso (ex IsNot Nothing) Then HelpLink = ex.HelpLink
 
             'Add the exception text to the message
             If ex IsNot Nothing Then
@@ -94,9 +96,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 End If
 
                 ' limit the length of message to prevent a bad layout.
-                If Message.Length > s_maxErrorMessageLength Then
-                    Message = Message.Substring(0, s_maxErrorMessageLength)
-                End If
+                If Message.Length > s_maxErrorMessageLength Then Message = Message.Substring(0, s_maxErrorMessageLength)
             Else
                 Debug.Assert(Message <> String.Empty)
             End If
@@ -116,11 +116,15 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <param name="HelpLink">Link to the help topic for this message box.</param>
         ''' <param name="DefaultButton">One of the MessageBoxDefaultButton values that specifies the default button of the message box.</param>
         ''' <remarks></remarks>
-        Friend Shared Function Show(ServiceProvider As IServiceProvider, Message As String, _
-                Caption As String, Buttons As MessageBoxButtons, Icon As MessageBoxIcon, _
-                Optional DefaultButton As MessageBoxDefaultButton = MessageBoxDefaultButton.Button1, _
-                Optional HelpLink As String = Nothing _
-        ) As DialogResult
+        Friend Shared Function Show(
+                                     ServiceProvider As IServiceProvider,
+                                     Message As String,
+                                     Caption As String,
+                                     Buttons As MessageBoxButtons,
+                                     Icon As MessageBoxIcon,
+                            Optional DefaultButton As MessageBoxDefaultButton = MessageBoxDefaultButton.Button1,
+                            Optional HelpLink As String = Nothing
+                                   ) As DialogResult
             Return ShowHelper(ServiceProvider, Message, Caption, Buttons, Icon, DefaultButton, HelpLink)
         End Function 'Show
 
@@ -136,26 +140,29 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <param name="HelpLink">Link to the help topic for this message box.</param>
         ''' <param name="DefaultButton">One of the MessageBoxDefaultButton values that specifies the default button of the message box.</param>
         ''' <remarks></remarks>
-        Private Shared Function ShowHelper(ServiceProvider As IServiceProvider, Message As String, _
-                Caption As String, Buttons As MessageBoxButtons, Icon As MessageBoxIcon, _
-                Optional DefaultButton As MessageBoxDefaultButton = MessageBoxDefaultButton.Button1, _
-                Optional HelpLink As String = Nothing _
-        ) As DialogResult
+        Private Shared Function ShowHelper(
+                                            ServiceProvider As IServiceProvider,
+                                            Message As String,
+                                            Caption As String,
+                                            Buttons As MessageBoxButtons,
+                                            Icon As MessageBoxIcon,
+                                   Optional DefaultButton As MessageBoxDefaultButton = MessageBoxDefaultButton.Button1,
+                                   Optional HelpLink As String = Nothing
+                                          ) As DialogResult
 
             If HelpLink = String.Empty Then
                 'Giving an empty string will show the Help button, we don't want it. Null won't.
                 HelpLink = Nothing
             End If
 
-            If Caption = String.Empty Then
-                Caption = Nothing 'Causes "Error" to be the caption...
-            End If
+            If Caption = String.Empty Then Caption = Nothing 'Causes "Error" to be the caption...
 
             If ServiceProvider IsNot Nothing Then
                 Try
                     Return ShowInternal(CType(ServiceProvider.GetService(GetType(IUIService)), IUIService),
-                        CType(ServiceProvider.GetService(GetType(IVsUIShell)), IVsUIShell),
-                        Message, Caption, Buttons, Icon, DefaultButton, HelpLink)
+                                        CType(ServiceProvider.GetService(GetType(IVsUIShell)), IVsUIShell),
+                                        Message, Caption, Buttons, Icon, DefaultButton, HelpLink)
+
                 Catch ex As Exception When Common.Utils.ReportWithoutCrash(ex, NameOf(ShowHelper), NameOf(DesignerMessageBox))
                 End Try
             Else
@@ -187,10 +194,16 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         '   So instead of this we cut this feature. When no help is needed, a standard MessageBox will be shown 
         '   but parented using the service provider if available, the caption will also be shown normally.
         '**************************************************************************
-        Protected Shared Function ShowInternal(UIService As IUIService, VsUIShell As IVsUIShell, _
-                Message As String, Caption As String, Buttons As MessageBoxButtons, _
-                Icon As MessageBoxIcon, DefaultButton As MessageBoxDefaultButton, HelpLink As String) _
-        As DialogResult
+        Protected Shared Function ShowInternal(
+                                                UIService As IUIService,
+                                                VsUIShell As IVsUIShell,
+                                                Message As String,
+                                                Caption As String,
+                                                Buttons As MessageBoxButtons,
+                                                Icon As MessageBoxIcon,
+                                                DefaultButton As MessageBoxDefaultButton,
+                                                HelpLink As String
+                                              ) As DialogResult
             If VsUIShell IsNot Nothing Then
                 Dim Guid As Guid = System.Guid.Empty
 
@@ -211,8 +224,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 '  is the best thing anyway, we shouldn't have to provide a caption (it changes
                 '  by installed SKU/product, for instance).
                 Dim Result As Integer
-                VSErrorHandler.ThrowOnFailure(VsUIShell.ShowMessageBox(0, Guid, Nothing, Message, HelpLink, 0, _
-                        OLEButtons, OLEDefaultButton, MessageBoxIconToOleIcon(Icon), CInt(False), Result))
+                VSErrorHandler.ThrowOnFailure(VsUIShell.ShowMessageBox(0, Guid, Nothing, Message, HelpLink, 0, OLEButtons, OLEDefaultButton, MessageBoxIconToOleIcon(Icon), CInt(False), Result))
                 Return CType(Result, DialogResult)
             Else
                 Debug.Fail("Could not retreive " & NameOf(IVsUIShell) & ", message box will not be parented")
@@ -266,7 +278,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         '   True if the string is empty string or only contains spaces. Otherwise false.
         '**************************************************************************
         Private Shared Function EmptyOrSpace(Str As String) As Boolean
-            Return Str = String.Empty OrElse Str.Trim.Length <= 0
+            Return (Str = String.Empty) OrElse (Str.Trim.Length <= 0)
         End Function
 
     End Class 'DesignerMessageBox 
