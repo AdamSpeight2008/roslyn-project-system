@@ -9,7 +9,7 @@ Namespace Microsoft.VisualStudio.Editors.VBRefChangedSvc.Interop
     ''' <summary>
     ''' Interface that defines the contract for VbReferenceChangedService.
     ''' </summary>
-    <GuidA("B3017D1B-2FF7-4f22-828C-CD74B6A702DC"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown), CLSCompliant(False), ComImport>
+    <Guid("B3017D1B-2FF7-4f22-828C-CD74B6A702DC"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown), CLSCompliant(False), ComImport>
     Friend Interface IVbReferenceChangedService
 
         <MethodImpl(MethodImplOptions.InternalCall), PreserveSig>

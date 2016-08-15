@@ -17,37 +17,25 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
         Private _caseSensitive As Boolean
 
         ' The list of types that we always know how to find. 
-        Private ReadOnly _wellKnownTypes() As System.Type = { _
-                                                    GetType(Boolean), _
-                                                    GetType(Byte), _
-                                                    GetType(Char), _
-                                                    GetType(DateTime), _
-                                                    GetType(Decimal), _
-                                                    GetType(Double), _
-                                                    GetType(Guid), _
-                                                    GetType(Short), _
-                                                    GetType(Integer), _
-                                                    GetType(Long), _
-                                                    GetType(SByte), _
-                                                    GetType(Single), _
-                                                    GetType(TimeSpan), _
-                                                    GetType(UShort), _
-                                                    GetType(UInteger), _
-                                                    GetType(ULong), _
-                                                    GetType(System.Drawing.Color), _
-                                                    GetType(System.Drawing.Font), _
-                                                    GetType(System.Drawing.Point), _
-                                                    GetType(System.Drawing.Size), _
-                                                    GetType(String), _
-                                                    GetType(Collections.Specialized.StringCollection) _
-                                                            }
+        Private ReadOnly _wellKnownTypes() As Type = {
+            GetType(Boolean), GetType(Byte), GetType(Char), GetType(DateTime), GetType(Decimal), GetType(Double),
+            GetType(Guid), GetType(Short), GetType(Integer), GetType(Long), GetType(SByte), GetType(Single),
+            GetType(TimeSpan), GetType(UShort), GetType(UInteger), GetType(ULong),
+            GetType(Drawing.Color), GetType(Drawing.Font), GetType(Drawing.Point), GetType(Drawing.Size),
+            GetType(String), GetType(Specialized.StringCollection)
+                                                     }
 
         ''' <summary>
         ''' Given a "normal" ITypeResolutionService, create an instance of the settingstypecache
         ''' </summary>
         ''' <param name="typeResolutionService"></param>
         ''' <remarks></remarks>
-        Public Sub New(vsHierarchy As IVsHierarchy, ItemId As UInteger, typeResolutionService As System.ComponentModel.Design.ITypeResolutionService, caseSensitive As Boolean)
+        Public Sub New(
+                        vsHierarchy As IVsHierarchy,
+                        ItemId As UInteger,
+                        typeResolutionService As ComponentModel.Design.ITypeResolutionService,
+                        caseSensitive As Boolean
+                      )
             If typeResolutionService Is Nothing OrElse vsHierarchy Is Nothing Then
                 Debug.Fail("We really need a type resolution service or IVsHierarchy in order to do anything interesting!")
                 Throw New ArgumentNullException()
@@ -85,9 +73,7 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
         Public Function GetSettingType(typeName As String) As System.Type
             ' First, check our list of well known types...
             For Each wellKnownType As System.Type In Me.GetWellKnownTypes()
-                If String.Equals(wellKnownType.FullName, typeName) Then
-                    Return wellKnownType
-                End If
+                If String.Equals(wellKnownType.FullName, typeName) Then Return wellKnownType
             Next
             Return ResolveType(typeName, _caseSensitive)
         End Function
@@ -111,9 +97,7 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
         ''' <remarks></remarks>
         Public Function IsWellKnownType(type As System.Type) As Boolean
             For Each wellKnownType As System.Type In GetWellKnownTypes()
-                If wellKnownType Is type Then
-                    Return True
-                End If
+                If wellKnownType Is type Then Return True
             Next
             Return False
         End Function
@@ -127,20 +111,18 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
         ''' <returns></returns>
         ''' <remarks></remarks>
         Private Function ResolveType(persistedSettingTypeName As String, caseSensitive As Boolean) As System.Type
-            Dim t As System.Type = Nothing
-            If System.String.Equals(persistedSettingTypeName, SettingsSerializer.CultureInvariantVirtualTypeNameConnectionString, StringComparison.Ordinal) Then
+            Dim t As Type = Nothing
+
+            If String.Equals(persistedSettingTypeName, SettingsSerializer.CultureInvariantVirtualTypeNameConnectionString, StringComparison.Ordinal) Then
                 Return GetType(VSDesigner.VSDesignerPackage.SerializableConnectionString)
-            ElseIf System.String.Equals(persistedSettingTypeName, SettingsSerializer.CultureInvariantVirtualTypeNameWebReference, StringComparison.Ordinal) Then
+            ElseIf String.Equals(persistedSettingTypeName, SettingsSerializer.CultureInvariantVirtualTypeNameWebReference, StringComparison.Ordinal) Then
                 t = GetType(String)
             Else
                 t = _typeResolutionService.GetType(persistedSettingTypeName, False, Not caseSensitive)
             End If
 
-            If t IsNot Nothing Then
-                Return _multiTargetService.GetSupportedType(t, False)
-            Else
-                Return t
-            End If
+            If t Is Nothing Then Return t
+            Return _multiTargetService.GetSupportedType(t, False)
         End Function
 
         Public Function TypeTransformer(sourceTypeName As String) As String

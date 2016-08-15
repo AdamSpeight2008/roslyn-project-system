@@ -610,7 +610,7 @@ Namespace Microsoft.VisualStudio.Editors.XmlIntellisense
     '   in a particular schema set, indexed by name and namespace for fast
     '   query access.
     '--------------------------------------------------------------------------
-    <ClassInterface(ClassInterfaceType.None)>_
+    <ClassInterface(ClassInterfaceType.None)>
     Friend Class IndexedMembers
         Private _targetNamespaces As Dictionary(Of String, String)
         Private _indexedByNamespace As Dictionary(Of String, List(Of XmlIntellisenseMember))

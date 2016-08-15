@@ -30,73 +30,62 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
         ' Map from .NET FX type names to language specific type names
         Private _fxTypeNameToLanguageSpecific As System.Collections.Generic.Dictionary(Of String, String)
 
-        ' Is the current language case-sensitive?
-        Private _caseSensitive As Boolean
+        '' Is the current language case-sensitive?
+        'Private _caseSensitive As Boolean
 
 #End Region
 
-        Public Sub New(languageGuid As System.String, Optional caseSensitive As Boolean = True)
+        Public Sub New(
+                        languageGuid As String,
+               Optional caseSensitive As Boolean = True
+                      )
+
             Dim language As Language
             Select Case languageGuid
                 Case EnvDTE.CodeModelLanguageConstants.vsCMLanguageCSharp
-                    language = language.CSharp
+                    language = Language.CSharp
                 Case EnvDTE.CodeModelLanguageConstants.vsCMLanguageVB
-                    language = language.VB
+                    language = Language.VB
                 Case EnvDTE80.CodeModelLanguageConstants2.vsCMLanguageJSharp
-                    language = language.JSharp
+                    language = Language.JSharp
                 Case Else
-                    language = language.UNKNOWN
+                    language = Language.UNKNOWN
             End Select
 
-            _caseSensitive = caseSensitive
+            Me.IsCaseSensitive = caseSensitive
 
-            Dim comparer As System.Collections.Generic.IEqualityComparer(Of String)
-            If caseSensitive Then
-                comparer = System.StringComparer.Ordinal
-            Else
-                comparer = System.StringComparer.OrdinalIgnoreCase
-            End If
+            Dim comparer = If(caseSensitive, StringComparer.Ordinal, StringComparer.OrdinalIgnoreCase)
 
-            _languageSpecificToFxTypeName = New System.Collections.Generic.Dictionary(Of String, String)(16, comparer)
-            _fxTypeNameToLanguageSpecific = New System.Collections.Generic.Dictionary(Of String, String)(16, comparer)
-            If language <> language.UNKNOWN Then
+            _languageSpecificToFxTypeName = New Dictionary(Of String, String)(16, comparer)
+            _fxTypeNameToLanguageSpecific = New Dictionary(Of String, String)(16, comparer)
+            If language <> Language.UNKNOWN Then
                 ' add language specific type names for C#, VB, J# respectively
-                AddEntry((GetType(Boolean).FullName), New String() {"bool", "Boolean", "boolean"}(language))
-                AddEntry((GetType(Byte).FullName), New String() {"byte", "Byte", "byte"}(language))
-                AddEntry((GetType(Char).FullName), New String() {"char", "Char", "char"}(language))
-                AddEntry((GetType(Decimal).FullName), New String() {"decimal", "Decimal", Nothing}(language))
-                AddEntry((GetType(Double).FullName), New String() {"double", "Double", "double"}(language))
-                AddEntry((GetType(Short).FullName), New String() {"short", "Short", "short"}(language))
-                AddEntry((GetType(Integer).FullName), New String() {"int", "Integer", "int"}(language))
-                AddEntry((GetType(Long).FullName), New String() {"long", "Long", "long"}(language))
-                AddEntry((GetType(SByte).FullName), New String() {"sbyte", "SByte", Nothing}(language))
-                AddEntry((GetType(Single).FullName), New String() {"float", "Single", "float"}(language))
-                AddEntry((GetType(UShort).FullName), New String() {"ushort", "UShort", Nothing}(language))
-                AddEntry((GetType(UInteger).FullName), New String() {"uint", "UInteger", Nothing}(language))
-                AddEntry((GetType(ULong).FullName), New String() {"ulong", "ULong", Nothing}(language))
-                AddEntry((GetType(String).FullName), New String() {"string", "String", "String"}(language))
-                AddEntry((GetType(System.DateTime).FullName), New String() {Nothing, "Date", Nothing}(language))
+                AddEntry((GetType(Boolean).FullName), {"bool", "Boolean", "boolean"}(language))
+                AddEntry((GetType(Byte).FullName), {"byte", "Byte", "byte"}(language))
+                AddEntry((GetType(Char).FullName), {"char", "Char", "char"}(language))
+                AddEntry((GetType(Decimal).FullName), {"decimal", "Decimal", Nothing}(language))
+                AddEntry((GetType(Double).FullName), {"double", "Double", "double"}(language))
+                AddEntry((GetType(Short).FullName), {"short", "Short", "short"}(language))
+                AddEntry((GetType(Integer).FullName), {"int", "Integer", "int"}(language))
+                AddEntry((GetType(Long).FullName), {"long", "Long", "long"}(language))
+                AddEntry((GetType(SByte).FullName), {"sbyte", "SByte", Nothing}(language))
+                AddEntry((GetType(Single).FullName), {"float", "Single", "float"}(language))
+                AddEntry((GetType(UShort).FullName), {"ushort", "UShort", Nothing}(language))
+                AddEntry((GetType(UInteger).FullName), {"uint", "UInteger", Nothing}(language))
+                AddEntry((GetType(ULong).FullName), {"ulong", "ULong", Nothing}(language))
+                AddEntry((GetType(String).FullName), {"string", "String", "String"}(language))
+                AddEntry((GetType(DateTime).FullName), {Nothing, "Date", Nothing}(language))
             End If
         End Sub
 
-        ''' <summary>
-        ''' Is the current language case sensitive?
-        ''' </summary>
-        ''' <value></value>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
+        ''' <summary> Is the current language case sensitive? </summary>
         Public ReadOnly Property IsCaseSensitive() As Boolean
-            Get
-                Return _caseSensitive
-            End Get
-        End Property
+
         ''' <summary>
         ''' Given the text persisted in the .settings file, return the string that we'll 
         ''' show in the UI
         ''' </summary>
-        ''' <param name="typeName"></param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
+        ''' <param name="typeName"/>
         Public Function PersistedSettingTypeNameToTypeDisplayName(typeName As String) As String
             Dim displayName As String = Nothing
             If String.Equals(typeName, SettingsSerializer.CultureInvariantVirtualTypeNameConnectionString, StringComparison.Ordinal) Then
@@ -113,9 +102,7 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
         ''' Given the string we persisted in the .settings file, return the .NET FX type name
         ''' that we'll use when building the CodeDom tree
         ''' </summary>
-        ''' <param name="typeName"></param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
+        ''' <param name="typeName"/>
         Public Function PersistedSettingTypeNameToFxTypeName(typeName As String) As String
             If String.Equals(typeName, SettingsSerializer.CultureInvariantVirtualTypeNameConnectionString, StringComparison.Ordinal) Then
                 Return GetType(String).FullName
@@ -130,9 +117,7 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
         ''' Given the text showing in the UI, return the string that we'll actually persist in the
         ''' .settings file
         ''' </summary>
-        ''' <param name="typeName"></param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
+        ''' <param name="typeName"/>
         Public Function TypeDisplayNameToPersistedSettingTypeName(typeName As String) As String
             Dim persistedTypeName As String = Nothing
             If String.Equals(typeName, DisplayTypeNameConnectionString, StringComparison.Ordinal) Then
@@ -164,7 +149,10 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
 
 #Region "Private implementation details"
 
-        Private Sub AddEntry(FxName As String, languageSpecificName As String)
+        Private Sub AddEntry(
+                              FxName As String,
+                              languageSpecificName As String
+                            )
             If languageSpecificName <> "" Then
                 _languageSpecificToFxTypeName(languageSpecificName) = FxName
                 _fxTypeNameToLanguageSpecific(FxName) = languageSpecificName
