@@ -160,14 +160,17 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <summary> Trace find/replace in the resource editor. </summary>
         Public Shared RSEFindReplace As New TraceSwitch(NameOf(RSEFindReplace), "Trace find/replace in the resource editor")
 #End Region
+
 #Region "------------- Designer Framework -------------"
         ''' <summary> Trace the showing of context menus via the base control classes in DesignerFramework. </summary>
         Public Shared DFContextMenu As New TraceSwitch(NameOf(DFContextMenu), "Trace the showing of context menus via the base control classes in DesignerFramework")
 #End Region
+
 #Region "------------- Common switches for Microsoft.VisualStudio.Editors -------------"
         ''' <summary> Trace source code control integration behavior in Microsoft.VisualStudio.Editors.dll. </summary>
         Public Shared MSVBE_SCC As New TraceSwitch(NameOf(MSVBE_SCC), "Trace source code control integration behavior in Microsoft.VisualStudio.Editors.dll")
 #End Region
+
 #Region "------------- Project Designer -------------"
         ''' <summary> Trace when the active designer changes in the project designer. </summary>
         Public Shared PDDesignerActivations As New TraceSwitch(NameOf(PDDesignerActivations), "Trace when the active designer changes in the project designer")
@@ -206,15 +209,18 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
         Public Shared PDLinqImports As New TraceSwitch(NameOf(PDLinqImports), "Traces the adding and removing of Linq imports during target framework upgrade/downgrade")
 #End Region
+
 #Region "------------- Settings Designer -------------"
         Public Shared SDSyncUserConfig As New TraceSwitch(NameOf(SDSyncUserConfig), "Trace synhronization/deletion of user.config files")
         ''' <summary> Tracing whenever we read/write .settings and/or app.config files... </summary>
         Public Shared SDSerializeSettings As New TraceSwitch(NameOf(SDSerializeSettings), "Serialization/deserialization of settings")
 #End Region
+
 #Region "------------- WCF Tooling -------------"
         Public Shared WCF_Config_FileChangeWatch As New TraceSwitch(NameOf(WCF_Config_FileChangeWatch), "Changes to configuration files in the current project")
         Public Shared WCF_ASR_DebugServiceInfoNodes As New TraceSwitch(NameOf(WCF_ASR_DebugServiceInfoNodes), "Displays additional information about the ServiceInfoNodes in the Services treeview in the ASR dialog")
 #End Region
+
 #Region "------------- MyExtensibility -------------"
         Public Shared MyExtensibilityTraceSwitch As New TraceSwitch(NameOf(MyExtensibilityTrace), "Trace switch for MyExtensibility Feature")
 #End Region

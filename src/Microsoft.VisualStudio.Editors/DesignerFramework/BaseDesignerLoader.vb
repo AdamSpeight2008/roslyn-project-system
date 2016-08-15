@@ -48,14 +48,10 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         '''   were to happen in the middle of things.
         ''' </remarks>
         Friend Overridable Sub ManualCheckOut(ByRef ProjectReloaded As Boolean)
-            If _readOnlyMode Then
-                Throw New ApplicationException(_readOnlyPrompt)
-            End If
+            If _readOnlyMode Then Throw New ApplicationException(_readOnlyPrompt)
 
             Try
-                If ManagingDynamicSetOfFiles Then
-                    _sourceCodeControlManager.ManagedFiles = FilesToCheckOut
-                End If
+                If ManagingDynamicSetOfFiles Then _sourceCodeControlManager.ManagedFiles = FilesToCheckOut
 
                 Dim RootDesigner As IRootDesigner = Nothing
                 Dim View As BaseDesignerView = Nothing
@@ -96,13 +92,8 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <returns></returns>
         ''' <remarks></remarks>
         Friend Overridable Function OkToEdit() As Boolean
-            If _readOnlyMode Then
-                Return False
-            End If
-
-            If ManagingDynamicSetOfFiles Then
-                _sourceCodeControlManager.ManagedFiles = FilesToCheckOut
-            End If
+            If _readOnlyMode Then Return False
+            If ManagingDynamicSetOfFiles Then _sourceCodeControlManager.ManagedFiles = FilesToCheckOut
             Return _sourceCodeControlManager.AreFilesEditable()
         End Function
 
@@ -110,8 +101,6 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' Indicate if we are managing a dynamic set of files (if the set of files to check out as a result of editing 
         ''' the primary file changes over time)
         ''' </summary>
-        ''' <value></value>
-        ''' <returns></returns>
         ''' <remarks>
         ''' This can be used by editors that sometimes add files to the project system to either specify the project file (if the 
         ''' file isn't in the project and needs to be added) or the newly added file. One example is the settings designer's handling
@@ -137,12 +126,9 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         End Property
 
 
-        ''' <summary>
-        ''' Set ReadOnly Mode or prompt message
-        ''' </summary>
-        ''' <param name="ReadOnlyMode"></param>
-        ''' <param name="Message"></param>
-        ''' <remarks></remarks>
+        ''' <summary> Set ReadOnly Mode or prompt message. </summary>
+        ''' <param name="ReadOnlyMode"/>
+        ''' <param name="Message"/>
         Friend Sub SetReadOnlyMode(ReadOnlyMode As Boolean, Message As String)
             _readOnlyMode = ReadOnlyMode
             _readOnlyPrompt = Message
@@ -159,7 +145,6 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         '''   additional work, such as checking out a file from source
         '''   code control.
         ''' </summary>
-        ''' <remarks></remarks>
         Protected Overrides Sub OnModifying()
             Switches.TraceSCC("BaseDesignerLoader.OnModifying()")
 
@@ -282,21 +267,11 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         Private _rdt As IVsRunningDocumentTable
         Private _rdtEventsCookie As UInteger
         Private _docCookie As UInteger
-        Private _projectItemid As UInteger
-        Private _vsHierarchy As IVsHierarchy
         Private _punkDocData As Object
 
         Friend ReadOnly Property VsHierarchy() As IVsHierarchy
-            Get
-                Return _vsHierarchy
-            End Get
-        End Property
 
         Friend ReadOnly Property ProjectItemid() As System.UInt32
-            Get
-                Return _projectItemid
-            End Get
-        End Property
 
         ''' <summary>
         ''' Project Item of the current Document
@@ -386,10 +361,8 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         End Enum
 
         Public Function GetEditorCaption(Status As EditorCaptionState) As String
-            Dim Caption As String = _baseEditorCaption
-            If Caption Is Nothing Then
-                Caption = ""
-            End If
+            Dim Caption As String = If(_baseEditorCaption, String.Empty)
+
 
             If Status = EditorCaptionState.AutoDetect Then
                 If m_DocData Is Nothing OrElse DocDataIsReadOnly Then
@@ -449,20 +422,24 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         '/     buffer to read from and a service provider through which we
         '/     can ask for services.
         '/ </devdoc>
-        Friend Overridable Sub InitializeEx(ServiceProvider As Shell.ServiceProvider, moniker As String, Hierarchy As IVsHierarchy, ItemId As UInteger, punkDocData As Object)
+        Friend Overridable Sub InitializeEx(
+                                             ServiceProvider As Shell.ServiceProvider,
+                                             moniker As String,
+                                             Hierarchy As IVsHierarchy,
+                                             ItemId As UInteger,
+                                             punkDocData As Object
+                                           )
 
             If m_DocData IsNot Nothing Then
                 Debug.Fail("BaseDesignerLoader.InitializeEx() should only be called once!")
                 Return
             End If
 
-            If moniker Is Nothing Then
-                moniker = String.Empty
-            End If
+            moniker = If(moniker, String.Empty)
 
             _moniker = moniker
-            _vsHierarchy = Hierarchy
-            _projectItemid = ItemId
+            _VsHierarchy = Hierarchy
+            _ProjectItemid = ItemId
             _punkDocData = punkDocData
 
             'Get the WindowEvents object
@@ -510,7 +487,9 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             _sourceCodeControlManager.ManagedFiles = FilesToCheckOut
         End Sub
 
-        Public Overrides Sub BeginLoad(host As IDesignerLoaderHost)
+        Public Overrides Sub BeginLoad(
+                                        host As IDesignerLoaderHost
+                                      )
             MyBase.BeginLoad(host)
 
             ' now that the base's BeginLoad has run, we can get services
@@ -531,23 +510,29 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         '  will automatically handle adding "[Read Only]" to the caption as necessary.
         '  If this default behavior is good enough, then BaseEditorCaption can be
         '  left at its default setting.
-        Protected Sub SetBaseEditorCaption(Caption As String)
+        Protected Sub SetBaseEditorCaption(
+                                            Caption As String
+                                          )
             _baseEditorCaption = Caption
         End Sub
 
-        Public Sub OnFileChanged(grfChange As UInteger, dwFileAttrs As UInteger) Implements TextManager.Interop.IVsTextBufferDataEvents.OnFileChanged
+        Public Sub OnFileChanged(
+                                  grfChange As UInteger,
+                                  dwFileAttrs As UInteger
+                                ) Implements TextManager.Interop.IVsTextBufferDataEvents.OnFileChanged
             Dim Frame As IVsWindowFrame = CType(GetService(GetType(IVsWindowFrame)), IVsWindowFrame)
-            If Frame IsNot Nothing Then
-                Dim Caption As String = GetEditorCaption(EditorCaptionState.AutoDetect)
-                VSErrorHandler.ThrowOnFailure(Frame.SetProperty(__VSFPROPID.VSFPROPID_EditorCaption, Caption))
-            End If
+            If Frame Is Nothing Then Exit Sub
+            Dim Caption As String = GetEditorCaption(EditorCaptionState.AutoDetect)
+            VSErrorHandler.ThrowOnFailure(Frame.SetProperty(__VSFPROPID.VSFPROPID_EditorCaption, Caption))
         End Sub
 
         ' Notifies client when the buffer is initialized with data either by a call to the methods:
         ' IVsPersistDocData::LoadDocData, IPersistStream::Load, IVsTextBuffer::InitializeContent, IPersistFile::Load, or
         ' IPersistFile::InitNew. This event is also fired if the text buffer executes a reload of its file in response to
         ' an IVsTextBufferDataEvents::OnFileChanged event, as when a file is edited outside of the environment.
-        Public Function OnLoadCompleted(fReload As Integer) As Integer Implements TextManager.Interop.IVsTextBufferDataEvents.OnLoadCompleted
+        Public Function OnLoadCompleted(
+                                         fReload As Integer
+                                       ) As Integer Implements TextManager.Interop.IVsTextBufferDataEvents.OnLoadCompleted
             If _loadDeferred Then
                 Debug.Assert(_deferredLoaderService IsNot Nothing)
 
@@ -574,10 +559,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             End If
         End Function
 
-        ''' <summary>
-        ''' OnDesignerLoadCompleted will be called when we finish loading the designer
-        ''' </summary>
-        ''' <remarks></remarks>
+        ''' <summary> OnDesignerLoadCompleted will be called when we finish loading the designer. </summary>
         Protected Overridable Sub OnDesignerLoadCompleted()
         End Sub
 
@@ -595,7 +577,10 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         '     Reloading is deferred until the document is later activated, and reload is contingent 
         '     upon IsReloadNeeded returning true.
         '**************************************************************************
-        Private Sub DocData_DataChanged(sender As Object, e As System.EventArgs) Handles m_DocData.DataChanged
+        Private Sub DocData_DataChanged(
+                                         sender As Object,
+                                         e As System.EventArgs
+                                       ) Handles m_DocData.DataChanged
             'The DocData has been changed externally (either outside of VS or from another editor).
             '  We notify ourselves that we need to reload.  The reload doesn't actually happen until we
             '  have focus again and then hit idle time processing.
@@ -628,16 +613,12 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' <param name="flushBeforeRun">If true, flush before running the custom tool</param>
         ''' <remarks></remarks>
         Friend Overridable Sub RunSingleFileGenerator(flushBeforeRun As Boolean)
-            If flushBeforeRun Then
-                HandleFlush(Nothing)
-            End If
+            If flushBeforeRun Then HandleFlush(Nothing)
             Try
                 Dim projItem As EnvDTE.ProjectItem = ProjectItem
                 If projItem IsNot Nothing Then
                     Dim vsProj As VSLangProj.VSProjectItem = TryCast(projItem.Object, VSLangProj.VSProjectItem)
-                    If vsProj IsNot Nothing Then
-                        vsProj.RunCustomTool()
-                    End If
+                    If vsProj IsNot Nothing Then vsProj.RunCustomTool()
                 End If
             Catch ex As Exception When Utils.ReportWithoutCrash(ex, "Failed to run custom tool", NameOf(BaseDesignerLoader))
             End Try
@@ -664,9 +645,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 Exit Sub
             End Try
 
-            If ThisProjectItem Is Nothing Then
-                Exit Sub
-            End If
+            If ThisProjectItem Is Nothing Then Exit Sub
 
             Switches.TracePDFocus(TraceLevel.Warning, "BaseDesignerLoader.WindowActivated")
 
@@ -697,56 +676,36 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         End Sub
 
 
-        ''' <summary>
-        ''' Called when the document's window is activated or deactivated
-        ''' </summary>
+        ''' <summary> Called when the document's window is activated or deactivated. </summary>
         ''' <param name="Activated">True if the document window has been activated, False if deactivated.</param>
-        ''' <remarks></remarks>
         Protected Overridable Sub OnDesignerWindowActivated(Activated As Boolean)
         End Sub
 
 #End Region
 
-        ''' <summary>
-        ''' Start listening to RDT events
-        ''' </summary>
-        ''' <remarks></remarks>
+        ''' <summary> Start listening to RDT events. </summary>
         Private Sub AdviseRunningDocTableEvents()
-            If _rdt IsNot Nothing Then
-                VSErrorHandler.ThrowOnFailure(_rdt.AdviseRunningDocTableEvents(Me, _rdtEventsCookie))
-            End If
+            If _rdt IsNot Nothing Then VSErrorHandler.ThrowOnFailure(_rdt.AdviseRunningDocTableEvents(Me, _rdtEventsCookie))
         End Sub
 
-        ''' <summary>
-        ''' Stop listening to RDT events
-        ''' </summary>
-        ''' <remarks></remarks>
+        ''' <summary> Stop listening to RDT events. </summary>
         Private Sub UnadviseRunningDocTableEvents()
-            If _rdtEventsCookie <> 0 Then
-                If _rdt IsNot Nothing Then
-                    VSErrorHandler.ThrowOnFailure(_rdt.UnadviseRunningDocTableEvents(_rdtEventsCookie))
-                End If
-                _rdtEventsCookie = 0
-            End If
+            If _rdtEventsCookie = 0 Then Exit Sub
+            If _rdt IsNot Nothing Then VSErrorHandler.ThrowOnFailure(_rdt.UnadviseRunningDocTableEvents(_rdtEventsCookie))
+            _rdtEventsCookie = 0
         End Sub
 
-        ''' <summary>
-        ''' Returns a document's RDT cookie
-        ''' </summary>
+        ''' <summary> Returns a document's RDT cookie. </summary>
         ''' <param name="filename">The name of the document</param>
         ''' <returns>The document's cookie, or 0 if it's not in the RDT</returns>
         Private Function GetDocCookie(filename As String) As UInteger
-            If filename Is Nothing Then
-                Throw New ArgumentNullException("filename")
-            End If
+            If filename Is Nothing Then Throw New ArgumentNullException(nameoffilename))
 
             Dim docCookie As UInteger = 0
             Dim rdt4 As IVsRunningDocumentTable4 = TryCast(_rdt, IVsRunningDocumentTable4)
 
             If rdt4 IsNot Nothing Then
-                If rdt4.IsMonikerValid(filename) Then
-                    docCookie = rdt4.GetDocumentCookie(filename)
-                End If
+                If rdt4.IsMonikerValid(filename) Then docCookie = rdt4.GetDocumentCookie(filename)
             Else
                 Debug.Fail("Couldn't get running document table")
             End If
@@ -754,19 +713,17 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             Return docCookie
         End Function
 
-        ''' <summary>
-        ''' Returns a document's RDT moniker
-        ''' </summary>
+        ''' <summary> Returns a document's RDT moniker. </summary>
         ''' <param name="docCookie">The document's cookie</param>
         ''' <returns>The document's moniker</returns>
-        Private Function GetDocumentMoniker(docCookie As UInteger) As String
+        Private Function GetDocumentMoniker(
+                                             docCookie As UInteger
+                                           ) As String
             Dim rdt4 As IVsRunningDocumentTable4 = TryCast(_rdt, IVsRunningDocumentTable4)
             Dim moniker As String = String.Empty
 
             If rdt4 IsNot Nothing Then
-                If rdt4.IsCookieValid(docCookie) Then
-                    moniker = rdt4.GetDocumentMoniker(docCookie)
-                End If
+                If rdt4.IsCookieValid(docCookie) Then moniker = rdt4.GetDocumentMoniker(docCookie)
             Else
                 Debug.Fail("Couldn't get running document table")
             End If
@@ -774,19 +731,21 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             Return moniker
         End Function
 
-        ''' <summary>
-        ''' Determines if two paths are equivalent (i.e. differ only by case)
-        ''' </summary>
-        Private Function PathEquals(path1 As String, path2 As String) As Boolean
+        ''' <summary> Determines if two paths are equivalent (i.e. differ only by case). </summary>
+        Private Function PathEquals(
+                                     path1 As String,
+                                     path2 As String
+                                   ) As Boolean
             Return String.Equals(path1, path2, StringComparison.OrdinalIgnoreCase)
         End Function
 
-        ''' <summary>
-        ''' Updates the LoaderHost with the new instance for the service type
-        ''' </summary>
+        ''' <summary> Updates the LoaderHost with the new instance for the service type. </summary>
         ''' <param name="serviceType">The type of the service to update</param>
         ''' <param name="serviceInstance">The new service instance</param>
-        Private Sub UpdateService(serviceType As Type, serviceInstance As Object)
+        Private Sub UpdateService(
+                                   serviceType As Type,
+                                   serviceInstance As Object
+                                 )
             ' remove the old instance
             LoaderHost.RemoveService(serviceType)
 
@@ -796,16 +755,23 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
 
 #Region "IVsRunningDocTableEvents2 Implementation"
 
-        Private Function OnAfterAttributeChangeEx(docCookie As UInteger, attributes As UInteger, hierOld As IVsHierarchy, itemidOld As UInteger, pszMkDocumentOld As String, hierNew As IVsHierarchy, itemidNew As UInteger, pszMkDocumentNew As String) As Integer _
-            Implements IVsRunningDocTableEvents2.OnAfterAttributeChangeEx
+        Private Function OnAfterAttributeChangeEx(
+                                                   docCookie As UInteger,
+                                                   attributes As UInteger,
+                                                   hierOld As IVsHierarchy,
+                                                   itemidOld As UInteger,
+                                                   pszMkDocumentOld As String,
+                                                   hierNew As IVsHierarchy,
+                                                   itemidNew As UInteger,
+                                                   pszMkDocumentNew As String
+                                                 ) As Integer Implements IVsRunningDocTableEvents2.OnAfterAttributeChangeEx
 
             ' if we don't have our cookie yet and a document is being initialized, see if it's ours
             If (_docCookie = 0) AndAlso ((attributes And __VSRDTATTRIB3.RDTA_DocumentInitialized) <> 0) AndAlso (_moniker.Length > 0) Then
                 Dim moniker As String = GetDocumentMoniker(docCookie)
 
-                If PathEquals(_moniker, moniker) Then
-                    _docCookie = docCookie
-                End If
+                If PathEquals(_moniker, moniker) Then _docCookie = docCookie
+
             End If
 
             ' if this change was for our document, see if anything interesting changed
@@ -813,19 +779,19 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 Dim updateProjectItemService As Boolean = False
 
                 ' if the hierarchy was updated, remember the new value
-                If ((attributes And __VSRDTATTRIB.RDTA_Hierarchy) <> 0) AndAlso (_vsHierarchy Is hierOld) Then
-                    _vsHierarchy = hierNew
+                If ((attributes And __VSRDTATTRIB.RDTA_Hierarchy) <> 0) AndAlso (_VsHierarchy Is hierOld) Then
+                    _VsHierarchy = hierNew
 
                     ' update the IVsHierarchy service with the new value
-                    UpdateService(GetType(IVsHierarchy), _vsHierarchy)
+                    UpdateService(GetType(IVsHierarchy), _VsHierarchy)
 
                     ' the hierarchy is a component of the ProjectItem, so we need to update the ProejctItem service as well
                     updateProjectItemService = True
                 End If
 
                 ' if the itemid was updated, remember the new value
-                If ((attributes And __VSRDTATTRIB.RDTA_ItemID) <> 0) AndAlso (_projectItemid = itemidOld) Then
-                    _projectItemid = itemidNew
+                If ((attributes And __VSRDTATTRIB.RDTA_ItemID) <> 0) AndAlso (_ProjectItemid = itemidOld) Then
+                    _ProjectItemid = itemidNew
 
                     ' the project item ID is a component of the ProjectItem, so we need to update the ProejctItem service
                     updateProjectItemService = True
@@ -837,36 +803,51 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 End If
 
                 ' update the ProjectItem service if we need to
-                If updateProjectItemService = True Then
-                    UpdateService(GetType(EnvDTE.ProjectItem), ProjectItem)
-                End If
+                If updateProjectItemService Then UpdateService(GetType(EnvDTE.ProjectItem), ProjectItem)
+
             End If
         End Function
 
 #Region "RDT events we don't care about"
 
-        Private Function OnAfterAttributeChange(docCookie As UInteger, attributes As UInteger) As Integer _
-            Implements IVsRunningDocTableEvents.OnAfterAttributeChange, IVsRunningDocTableEvents2.OnAfterAttributeChange
+        Private Function OnAfterAttributeChange(
+                                                 docCookie As UInteger,
+                                                 attributes As UInteger
+                                               ) As Integer Implements IVsRunningDocTableEvents.OnAfterAttributeChange, IVsRunningDocTableEvents2.OnAfterAttributeChange
         End Function
 
-        Private Function OnAfterFirstDocumentLock(docCookie As UInteger, lockType As UInteger, readLocksRemaining As UInteger, editLocksRemaining As UInteger) As Integer _
-            Implements IVsRunningDocTableEvents.OnAfterFirstDocumentLock, IVsRunningDocTableEvents2.OnAfterFirstDocumentLock
+        Private Function OnAfterFirstDocumentLock(
+                                                   docCookie As UInteger,
+                                                   lockType As UInteger,
+                                                   readLocksRemaining As UInteger,
+                                                   editLocksRemaining As UInteger
+                                                 ) As Integer Implements IVsRunningDocTableEvents.OnAfterFirstDocumentLock, IVsRunningDocTableEvents2.OnAfterFirstDocumentLock
         End Function
 
-        Private Function OnBeforeLastDocumentUnlock(docCookie As UInteger, lockType As UInteger, readLocksRemaining As UInteger, editLocksRemaining As UInteger) As Integer _
-            Implements IVsRunningDocTableEvents.OnBeforeLastDocumentUnlock, IVsRunningDocTableEvents2.OnBeforeLastDocumentUnlock
+        Private Function OnBeforeLastDocumentUnlock(
+                                                     docCookie As UInteger,
+                                                     lockType As UInteger,
+                                                     readLocksRemaining As UInteger,
+                                                     editLocksRemaining As UInteger
+                                                   ) As Integer Implements IVsRunningDocTableEvents.OnBeforeLastDocumentUnlock, IVsRunningDocTableEvents2.OnBeforeLastDocumentUnlock
         End Function
 
-        Private Function OnAfterDocumentWindowHide(docCookie As UInteger, frame As IVsWindowFrame) As Integer _
-            Implements IVsRunningDocTableEvents.OnAfterDocumentWindowHide, IVsRunningDocTableEvents2.OnAfterDocumentWindowHide
+        Private Function OnAfterDocumentWindowHide(
+                                                    docCookie As UInteger,
+                                                    frame As IVsWindowFrame
+                                                  ) As Integer Implements IVsRunningDocTableEvents.OnAfterDocumentWindowHide, IVsRunningDocTableEvents2.OnAfterDocumentWindowHide
         End Function
 
-        Private Function OnAfterSave(docCookie As UInteger) As Integer _
-            Implements IVsRunningDocTableEvents.OnAfterSave, IVsRunningDocTableEvents2.OnAfterSave
+        Private Function OnAfterSave(
+                                      docCookie As UInteger
+                                    ) As Integer Implements IVsRunningDocTableEvents.OnAfterSave, IVsRunningDocTableEvents2.OnAfterSave
         End Function
 
-        Private Function OnBeforeDocumentWindowShow(docCookie As UInteger, firstShow As Integer, frame As IVsWindowFrame) As Integer _
-            Implements IVsRunningDocTableEvents.OnBeforeDocumentWindowShow, IVsRunningDocTableEvents2.OnBeforeDocumentWindowShow
+        Private Function OnBeforeDocumentWindowShow(
+                                                     docCookie As UInteger,
+                                                     firstShow As Integer,
+                                                     frame As IVsWindowFrame
+                                                   ) As Integer Implements IVsRunningDocTableEvents.OnBeforeDocumentWindowShow, IVsRunningDocTableEvents2.OnBeforeDocumentWindowShow
         End Function
 
 #End Region

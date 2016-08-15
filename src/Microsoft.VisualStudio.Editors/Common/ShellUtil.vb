@@ -116,7 +116,6 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '''   we hide the configuration/platform comboboxes.
         ''' </summary>
         ''' <param name="ProjectHierarchy">The hierarchy to check</param>
-        ''' <remarks></remarks>
         Public Shared Function GetIsSimplifiedConfigMode(
                                                           ProjectHierarchy As IVsHierarchy
                                                         ) As Boolean
@@ -141,7 +140,6 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '''   from then on out).
         ''' </summary>
         ''' <param name="ProjectHierarchy">The project hierarchy to check</param>
-        ''' <remarks></remarks>
         Private Shared Function CanHideConfigurationsForProject(
                                                                  ProjectHierarchy As IVsHierarchy
                                                                ) As Boolean
@@ -163,7 +161,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
             If VSErrorHandler.Succeeded(hr) AndAlso TypeOf ValueObject Is Boolean Then
                 ReturnValue = CBool(ValueObject)
             Else
-                Debug.Fail("Failed to get VSCFGPROPID_HideConfigurations from project config provider")
+                Debug.Fail("Failed to get " & NameOf(__VSCFGPROPID2.VSCFGPROPID_HideConfigurations) & " from project config provider")
                 ReturnValue = False
             End If
 
@@ -261,7 +259,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                                                 hierarchy As IVsHierarchy
                                               ) As Boolean
             If hierarchy Is Nothing Then
-                Debug.Fail("I can't determine if this is a devices project from a NULL hierarchy!?")
+                Debug.Fail("I can't determine if this is a devices project from a NULL " & NameOf(hierarchy) & "!?")
                 Return False
             End If
 
@@ -322,7 +320,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                     '  The project guids string looks like "{Guid 1};{Guid 2};...{Guid n}" with Guid n the inner most
                     aggregatableProject.GetAggregateProjectTypeGuids(guidStrings)
 
-                    For Each guidString As String In guidStrings.Split(New Char() {";"c})
+                    For Each guidString As String In guidStrings.Split(";"c)
                         If guidString = "" Then Continue For
                         ' Insert Guid to the front
                         Try
@@ -375,7 +373,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                     '  The project guids string looks like "{Guid 1};{Guid 2};...{Guid n}" with Guid n the inner most
                     aggregatableProject.GetAggregateProjectTypeGuids(guidStrings)
 
-                    For Each guidString As String In guidStrings.Split(New Char() {";"c})
+                    For Each guidString As String In guidStrings.Split(";"c)
                         If guidString = "" Then Continue For
                         ' Insert Guid to the front
                         Try
@@ -471,10 +469,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' The predicate is passed each full path to the project item, and if it returns
         ''' true, the item will not be added to the list of items to check out.
         ''' </param>
-        ''' <returns>
-        ''' The list of items that are to be checked out
-        ''' </returns>
-        ''' <remarks></remarks>
+        ''' <returns> The list of items that are to be checked out. </returns>
         Friend Shared Function FileNameAndGeneratedFileName(
                                                              projectitem As EnvDTE.ProjectItem,
                                                     Optional suffix As String = ".Designer",
@@ -575,7 +570,11 @@ Namespace Microsoft.VisualStudio.Editors.Common
             ''' <param name="msg"/>
             ''' <param name="wParam"/>
             ''' <param name="lParam"/>
-            Private Function IVsBroadcastMessageEvents_OnBroadcastMessage(msg As UInteger, wParam As System.IntPtr, lParam As System.IntPtr) As Integer Implements Shell.Interop.IVsBroadcastMessageEvents.OnBroadcastMessage
+            Private Function IVsBroadcastMessageEvents_OnBroadcastMessage(
+                                                                           msg As UInteger,
+                                                                           wParam As System.IntPtr,
+                                                                           lParam As System.IntPtr
+                                                                         ) As Integer Implements Shell.Interop.IVsBroadcastMessageEvents.OnBroadcastMessage
                 OnBroadcastMessage(msg, wParam, lParam)
                 Return Interop.NativeMethods.S_OK
             End Function
@@ -584,7 +583,11 @@ Namespace Microsoft.VisualStudio.Editors.Common
             ''' <param name="msg"/>
             ''' <param name="wParam"/>
             ''' <param name="lParam"/>
-            Protected Overridable Sub OnBroadcastMessage(msg As UInteger, wParam As System.IntPtr, lParam As System.IntPtr)
+            Protected Overridable Sub OnBroadcastMessage(
+                                                          msg As UInteger,
+                                                          wParam As System.IntPtr,
+                                                          lParam As System.IntPtr
+                                                        )
                 RaiseEvent BroadcastMessage(msg, wParam, lParam)
             End Sub
 
@@ -593,7 +596,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Private _disposed As Boolean = False
 
             ' IDisposable
-            Private Overloads Sub Dispose(disposing As Boolean)
+            Private Overloads Sub Dispose(
+                                           disposing As Boolean
+                                         )
                 If Not Me._disposed AndAlso disposing Then DisconnectBroadcastMessages()
                 Me._disposed = True
             End Sub
@@ -653,7 +658,12 @@ Namespace Microsoft.VisualStudio.Editors.Common
             ''' <param name="msg"/>
             ''' <param name="wParam"/>
             ''' <param name="lParam"/>
-            Protected Overrides Sub OnBroadcastMessage(msg As UInteger, wParam As System.IntPtr, lParam As System.IntPtr)
+            Protected Overrides Sub OnBroadcastMessage(
+                                                        msg As UInteger,
+                                                        wParam As System.IntPtr,
+                                                        lParam As System.IntPtr
+                                                      )
+
                 MyBase.OnBroadcastMessage(msg, wParam, lParam)
 
                 If _control Is Nothing Then Exit Sub
@@ -665,14 +675,16 @@ Namespace Microsoft.VisualStudio.Editors.Common
             End Sub
 
             ''' <summary> Pick current dialog font... </summary>
-            Friend Shared ReadOnly Property GetDialogFont(ServiceProvider As IServiceProvider) As Font
+            Friend Shared ReadOnly Property GetDialogFont(
+                                                           ServiceProvider As IServiceProvider
+                                                         ) As Font
                 Get
                     If ServiceProvider IsNot Nothing Then
-                        Dim uiSvc As System.Windows.Forms.Design.IUIService = CType(ServiceProvider.GetService(GetType(System.Windows.Forms.Design.IUIService)), System.Windows.Forms.Design.IUIService)
+                        Dim uiSvc = CType(ServiceProvider.GetService(GetType(System.Windows.Forms.Design.IUIService)), System.Windows.Forms.Design.IUIService)
                         If uiSvc IsNot Nothing Then Return CType(uiSvc.Styles("DialogFont"), Font)
                     End If
 
-                    Debug.Fail("Couldn't get a IUIService... cheating instead :)")
+                    Debug.Fail("Couldn't get a " & NameOf(IUIService) & "... cheating instead :)")
 
                     Return System.Windows.Forms.Form.DefaultFont
                 End Get
@@ -684,9 +696,13 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="hierarchy">Hierarchy to check if the custom tool is registered for</param>
         ''' <param name="customToolName">Name of custom tool to look for</param>
         ''' <returns>True if registered, false otherwise</returns>
-        Friend Shared Function IsCustomToolRegistered(hierarchy As IVsHierarchy, customToolName As String) As Boolean
-            If hierarchy Is Nothing Then Throw New ArgumentNullException("hierarchy")
-            If customToolName Is Nothing Then Throw New ArgumentNullException("customToolName")
+        Friend Shared Function IsCustomToolRegistered(
+                                                       hierarchy As IVsHierarchy,
+                                                       customToolName As String
+                                                      ) As Boolean
+
+            If hierarchy Is Nothing Then Throw New ArgumentNullException(NameOf(hierarchy))
+            If customToolName Is Nothing Then Throw New ArgumentNullException(NameOf(customToolName))
 
             ' All project systems support empty string (= no custom tool)
             If customToolName.Length = 0 Then Return True
@@ -738,7 +754,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Return result
         End Function
 
-        Public Shared Function GetServiceProvider(dte As DTE) As IServiceProvider
+        Public Shared Function GetServiceProvider(
+                                                   dte As DTE
+                                                 ) As IServiceProvider
             Return New Microsoft.VisualStudio.Shell.ServiceProvider(DirectCast(dte, Microsoft.VisualStudio.OLE.Interop.IServiceProvider))
         End Function
         ''' <summary>
@@ -801,7 +819,10 @@ Namespace Microsoft.VisualStudio.Editors.Common
                 End If
             End If
 
-            Debug.Fail("Unable to get color from the shell, using a predetermined default color instead." & VB.vbCrLf & "Color Index = " & VsSysColorIndex & ", Default Color = &h" & VB.Hex(DefaultColor.ToArgb))
+            Debug.Fail(
+"Unable to get color from the shell, using a predetermined default color instead.
+Color Index = " & VsSysColorIndex & ", Default Color = &h" & VB.Hex(DefaultColor.ToArgb)
+                      )
             Return DefaultColor
         End Function
 

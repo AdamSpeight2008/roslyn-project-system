@@ -14,11 +14,13 @@ Namespace Microsoft.VisualStudio.Editors.Common
     '''    The project system will hold build process until the batch operation ends.
     '''    with the Using keyword as follows:
     ''' 
+    '''    <code>
     '''    Sub Func()
     '''        Using New ProjectBatchEdit(projectHierarchy)
     '''            (do work)
     '''        End Using
     '''    End Sub
+    '''    </code>
     ''' </summary>
     Friend Class ProjectBatchEdit
         Implements IDisposable
@@ -28,7 +30,10 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
         ''' <param name="projectHierarchy"> The VS project object</param>
         ''' <param name="startBatch">If true, we start a batch process immediately</param>
-        Friend Sub New(projectHierarchy As IVsHierarchy, Optional startBatch As Boolean = True)
+        Friend Sub New(
+                        projectHierarchy As IVsHierarchy,
+               Optional startBatch As Boolean = True
+                      )
             _projectBuildSystem = TryCast(projectHierarchy, IVsProjectBuildSystem)
             If startBatch AndAlso _projectBuildSystem IsNot Nothing Then
                 _projectBuildSystem.StartBatchEdit()

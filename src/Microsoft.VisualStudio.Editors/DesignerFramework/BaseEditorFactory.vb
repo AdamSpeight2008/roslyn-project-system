@@ -56,7 +56,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
     '''          (inherits from ComponentDesigner and implements IRootDesigner) and a view (probably inherits from
     '''           UserControl or ControlContainer)
     ''' </remarks>
-    <CLSCompliant(False)> _
+    <CLSCompliant(False)>
     Friend MustInherit Class BaseEditorFactory
         Implements IVsEditorFactory, IDisposable
 
@@ -64,39 +64,33 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
 #Region "Fields and Structures"
 
         Private _site As Object 'The site that owns this editor factory
-        Private _serviceProvider As Shell.ServiceProvider 'The service provider from m_Site
+        'Private _serviceProvider As Shell.ServiceProvider 'The service provider from m_Site
         Private _designerLoaderType As Type 'The type of designer loader to create.  Typically there is a separate designer loader class per editor factory (and therefore per designer type)
         Private Shared ReadOnly s_defaultPhysicalViewName As String = Nothing 'The default physical view *must* be Nothing
 
 #End Region
 
 
-        ''' <summary>
-        '''     Creates a new editor factory.
-        ''' </summary>
-        Public Sub New(DesignerLoaderType As Type)
+        ''' <summary> Creates a new editor factory. </summary>
+        Public Sub New(
+                        DesignerLoaderType As Type
+                      )
             Debug.Assert(Not DesignerLoaderType Is Nothing)
             _designerLoaderType = DesignerLoaderType
         End Sub
 
 
-        ''' <summary>
-        '''     Called by the VS shell before this editor is removed from the list of available
-        '''     editor factories.
-        ''' </summary>
+        ''' <summary> Called by the VS shell before this editor is removed from the list of available editor factories. </summary>
         Public Overridable Function Close() As Integer Implements IVsEditorFactory.Close
             Dispose()
         End Function
 
 
 
-        ''' <summary>
-        ''' Creates a new native TextBuffer by CoCreating it from COM.
-        ''' </summary>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
+        ''' <summary> Creates a new native TextBuffer by CoCreating it from COM. </summary>
         Protected Function CreateNewTextStreamBuffer() As IVsTextStream
-            Dim LocalRegistry As ILocalRegistry = CType(_serviceProvider.GetService(GetType(ILocalRegistry)), ILocalRegistry)
+
+            Dim LocalRegistry As ILocalRegistry = CType(Me.ServiceProvider.GetService(GetType(ILocalRegistry)), ILocalRegistry)
             Dim TextStreamInstance As IVsTextStream = Nothing
 
             If LocalRegistry Is Nothing Then
@@ -134,9 +128,9 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         '''   compatible, it uses that.  Otherwise it creates a new native TextBuffer.
         ''' </summary>
         ''' <param name="ExistingDocData">The existing DocData pointer, if any</param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Protected Overridable Function GetOrCreateDocDataForNewEditor(ExistingDocData As Object) As Object
+        Protected Overridable Function GetOrCreateDocDataForNewEditor(
+                                                                       ExistingDocData As Object
+                                                                     ) As Object
             Dim TextStreamInstance As IVsTextStream
 
             If ExistingDocData Is Nothing Then
@@ -242,19 +236,19 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         '''   to continue without closing the document if it is currently open. VS_E_INCOMPATIBLEDOCDATA 
         '''   will ask if the open document should be closed. Any other return will stop the loop from continuing.                                                                                                                                                                                                                                                                                                                                                                         If the constructed object referenced by ppunkDocData supports IOleCommandTarget, the object is included in the command routing chain of the Environment after the command is routed to the active object referenced by ppunkDocView.
         '''   
-        Private Function IVsEditorFactory_CreateEditorInstance( _
-                vscreateeditorflags As UInteger, _
-                FileName As String, _
-                PhysicalView As String, _
-                Hierarchy As IVsHierarchy, _
-                Itemid As UInteger, _
-                ExistingDocDataPtr As IntPtr, _
-                ByRef DocViewPtr As IntPtr, _
-                ByRef DocDataPtr As IntPtr, _
-                ByRef Caption As String, _
-                ByRef CmdUIGuid As System.Guid, _
-                ByRef FCanceled As Integer) As Integer _
-        Implements IVsEditorFactory.CreateEditorInstance
+        Private Function IVsEditorFactory_CreateEditorInstance(
+                                                                vscreateeditorflags As UInteger,
+                                                                FileName As String,
+                                                                PhysicalView As String,
+                                                                Hierarchy As IVsHierarchy,
+                                                                Itemid As UInteger,
+                                                                ExistingDocDataPtr As IntPtr,
+                                                          ByRef DocViewPtr As IntPtr,
+                                                          ByRef DocDataPtr As IntPtr,
+                                                          ByRef Caption As String,
+                                                          ByRef CmdUIGuid As System.Guid,
+                                                          ByRef FCanceled As Integer
+                                                              ) As Integer Implements IVsEditorFactory.CreateEditorInstance
 
             Try
                 Dim ExistingDocData As Object = Nothing
@@ -297,29 +291,30 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' Creates a new editor for the given pile of flags.  Helper function for the overload
         '''   which implements IVsEditorFactory.CreateEditorInstance
         ''' </summary>
-        ''' <param name="VsCreateEditorFlags"></param>
-        ''' <param name="FileName"></param>
-        ''' <param name="PhysicalView"></param>
-        ''' <param name="Hierarchy"></param>
-        ''' <param name="ItemId"></param>
-        ''' <param name="ExistingDocData"></param>
-        ''' <param name="DocView"></param>
-        ''' <param name="DocData"></param>
-        ''' <param name="Caption"></param>
-        ''' <param name="CmdUIGuid"></param>
-        ''' <param name="Canceled"></param>
-        ''' <remarks></remarks>
-        Protected Overridable Sub CreateEditorInstance(VsCreateEditorFlags As System.UInt32, _
-                FileName As String, _
-                PhysicalView As String, _
-                Hierarchy As IVsHierarchy, _
-                ItemId As System.UInt32, _
-                ExistingDocData As Object, _
-                ByRef DocView As Object, _
-                ByRef DocData As Object, _
-                ByRef Caption As String, _
-                ByRef CmdUIGuid As System.Guid, _
-                ByRef Canceled As Boolean)
+        ''' <param name="VsCreateEditorFlags"/>
+        ''' <param name="FileName"/>
+        ''' <param name="PhysicalView"/>
+        ''' <param name="Hierarchy"/>
+        ''' <param name="ItemId"/>
+        ''' <param name="ExistingDocData"/>
+        ''' <param name="DocView"/>
+        ''' <param name="DocData"/>
+        ''' <param name="Caption"/>
+        ''' <param name="CmdUIGuid"/>
+        ''' <param name="Canceled"/>
+        Protected Overridable Sub CreateEditorInstance(
+                                                        VsCreateEditorFlags As System.UInt32,
+                                                        FileName As String,
+                                                        PhysicalView As String,
+                                                        Hierarchy As IVsHierarchy,
+                                                        ItemId As System.UInt32,
+                                                        ExistingDocData As Object,
+                                                  ByRef DocView As Object,
+                                                  ByRef DocData As Object,
+                                                  ByRef Caption As String,
+                                                  ByRef CmdUIGuid As System.Guid,
+                                                  ByRef Canceled As Boolean
+                                                      )
             Canceled = False
             CmdUIGuid = System.Guid.Empty
 
@@ -339,7 +334,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                     DocData = Nothing
                     Caption = Nothing
 
-                    Dim DesignerService As IVSMDDesignerService = CType(_serviceProvider.GetService(GetType(IVSMDDesignerService)), IVSMDDesignerService)
+                    Dim DesignerService As IVSMDDesignerService = CType(Me.ServiceProvider.GetService(GetType(IVSMDDesignerService)), IVSMDDesignerService)
                     If DesignerService Is Nothing Then
                         Throw New Exception(SR.GetString(SR.DFX_EditorNoDesignerService, FileName))
                     End If
@@ -350,9 +345,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
 
                     'Site the TextStream
                     If ExistingDocData Is Nothing Then
-                        If TypeOf NewDocData Is IObjectWithSite Then
-                            CType(NewDocData, IObjectWithSite).SetSite(_site)
-                        End If
+                        If TypeOf NewDocData Is IObjectWithSite Then CType(NewDocData, IObjectWithSite).SetSite(_site)
                     End If
 
                     ' Create and initialize our code stream.
@@ -362,9 +355,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                     '  nothing wrong with it, either.
                     Dim DesignerLoaderClassName As String = _designerLoaderType.AssemblyQualifiedName
                     Dim DesignerLoaderObject As Object = DesignerService.CreateDesignerLoader(DesignerLoaderClassName)
-                    If DesignerLoaderObject Is Nothing Then
-                        Debug.Fail("DesignerService.CreateDesignerLoader() returned Nothing")
-                    End If
+                    If DesignerLoaderObject Is Nothing Then Debug.Fail("DesignerService.CreateDesignerLoader() returned Nothing")
                     If Not TypeOf (DesignerLoaderObject) Is BaseDesignerLoader Then
                         Debug.Fail("DesignerLoader was of an unexpected type.  This likely means that Microsoft.VisualStudio.Editors.dll was " _
                             & "loaded twice from two different locations (or from the same location but one with 8.3 and the other long paths).  " _
@@ -373,13 +364,13 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                     DesignerLoader = CType(DesignerLoaderObject, BaseDesignerLoader)
 
                     'Initialize the sucker
-                    Debug.Assert(_serviceProvider IsNot Nothing)
-                    DesignerLoader.InitializeEx(_serviceProvider, FileName, Hierarchy, ItemId, NewDocData)
+                    Debug.Assert(Me.ServiceProvider IsNot Nothing)
+                    DesignerLoader.InitializeEx(Me.ServiceProvider, FileName, Hierarchy, ItemId, NewDocData)
 
                     'Now slam the two together and make a designer
 
                     '... Get a managed Designer (this will expose an IVsWindowPane to the shell)
-                    Dim OleProvider As OLE.Interop.IServiceProvider = CType(_serviceProvider.GetService(GetType(OLE.Interop.IServiceProvider)), OLE.Interop.IServiceProvider)
+                    Dim OleProvider As OLE.Interop.IServiceProvider = CType(Me.ServiceProvider.GetService(GetType(OLE.Interop.IServiceProvider)), OLE.Interop.IServiceProvider)
                     Dim Designer As IVSMDDesigner = DesignerService.CreateDesigner(OleProvider, DesignerLoader)
                     Debug.Assert(Not (Designer Is Nothing), "Designer service should have thrown if it had a problem.")
 
@@ -402,17 +393,10 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                     CmdUIGuid = CommandUIGuid
                 End Using
             Catch ex As COMException
-                If DesignerLoader IsNot Nothing Then
-                    'We need to let the DesignerLoader disconnect from events
-                    DesignerLoader.Dispose()
-                End If
+                If DesignerLoader IsNot Nothing Then DesignerLoader.Dispose() 'We need to let the DesignerLoader disconnect from events
                 Throw
             Catch ex As Exception
-                If DesignerLoader IsNot Nothing Then
-                    'We need to let the DesignerLoader disconnect from events
-                    DesignerLoader.Dispose()
-                End If
-
+                If DesignerLoader IsNot Nothing Then DesignerLoader.Dispose() 'We need to let the DesignerLoader disconnect from events
                 Throw New COMException(SR.GetString(SR.DFX_CreateEditorInstanceFailed_Ex, ex))
             End Try
         End Sub
@@ -447,40 +431,36 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         ''' {...LOGVIEWID_Debugging...} = s ''
         ''' {...LOGVIEWID_Designer...} = s 'Form'
         ''' </summary>
-        Private Function IVsEditorFactory_MapLogicalView(ByRef LogicalView As System.Guid, ByRef PhysicalViewOut As String) As Integer Implements IVsEditorFactory.MapLogicalView
+        Private Function IVsEditorFactory_MapLogicalView(
+                                                    ByRef LogicalView As System.Guid,
+                                                    ByRef PhysicalViewOut As String
+                                                        ) As Integer Implements IVsEditorFactory.MapLogicalView
             Return MapLogicalView(LogicalView, PhysicalViewOut)
         End Function
 
-        Protected MustOverride Function MapLogicalView(ByRef LogicalView As System.Guid, ByRef PhysicalViewOut As String) As Integer
+        Protected MustOverride Function MapLogicalView(
+                                                  ByRef LogicalView As System.Guid,
+                                                  ByRef PhysicalViewOut As String
+                                                      ) As Integer
 
-        ''' <summary>
-        ''' Returns the ServiceProvider
-        ''' </summary>
-        ''' <value></value>
-        ''' <remarks>
-        ''' Will not be available before OnSited is called.
-        ''' </remarks>
+        ''' <summary> Returns the ServiceProvider </summary>
+        ''' <remarks> Will not be available before OnSited is called.</remarks>
         Protected ReadOnly Property ServiceProvider() As Shell.ServiceProvider
-            Get
-                Return _serviceProvider
-            End Get
-        End Property
 
 
-        ''' <summary>
-        '''     Called by the VS shell when it first initializes us.
-        ''' </summary>
-        Private Function IVsEditorFactory_SetSite(site As OLE.Interop.IServiceProvider) As Integer Implements IVsEditorFactory.SetSite
+        ''' <summary>Called by the VS shell when it first initializes us. </summary>
+        Private Function IVsEditorFactory_SetSite(
+                                                   site As OLE.Interop.IServiceProvider
+                                                 ) As Integer Implements IVsEditorFactory.SetSite
             SetSiteInternal(site)
         End Function
 
 
-        ''' <summary>
-        ''' Called by the VS shell when it first initializes us.  
-        ''' </summary>
+        ''' <summary> Called by the VS shell when it first initializes us. </summary>
         ''' <param name="Site">The Site that will own this editor factory</param>
-        ''' <remarks></remarks>
-        Private Sub SetSiteInternal(Site As Object)
+        Private Sub SetSiteInternal(
+                                     Site As Object
+                                   )
             'This same Site already set?  Or Site not yet initialized (= Nothing)?  If so, NOP.
             If Me._site Is Site Then
                 Debug.Fail("Why is this EditorFactory site:ed twice?")
@@ -488,14 +468,14 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             End If
 
             'Site is different - set it
-            If _serviceProvider IsNot Nothing Then
+            If _ServiceProvider IsNot Nothing Then
                 ' Let's make sure we dispose any old service provider we had...
-                _serviceProvider.Dispose()
-                _serviceProvider = Nothing
+                _ServiceProvider.Dispose()
+                _ServiceProvider = Nothing
             End If
             Me._site = Site
             If TypeOf Site Is OLE.Interop.IServiceProvider Then
-                _serviceProvider = New Shell.ServiceProvider(CType(Site, OLE.Interop.IServiceProvider))
+                _ServiceProvider = New Shell.ServiceProvider(CType(Site, OLE.Interop.IServiceProvider))
             End If
 
             Me.OnSited()
@@ -503,9 +483,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
 
 
 #Region "IDisposable standard pattern"
-        ''' <summary>
-        ''' Dispose my resources
-        ''' </summary>
+        ''' <summary> Dispose my resources. </summary>
         ''' <remarks>Standard implementation pattern for IDisposable</remarks>
         Public Overloads Sub Dispose() Implements System.IDisposable.Dispose
             Dispose(True)

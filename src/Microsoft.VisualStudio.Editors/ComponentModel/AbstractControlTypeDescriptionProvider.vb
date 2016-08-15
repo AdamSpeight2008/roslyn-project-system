@@ -15,7 +15,10 @@
 
         End Sub
 
-        Public Overrides Function GetReflectionType(objectType As Type, instance As Object) As Type
+        Public Overrides Function GetReflectionType(
+                                                     objectType As Type,
+                                                     instance As Object
+                                                   ) As Type
 
             ' If the designer Is asking for the abstract control,
             ' return the "concrete" version of it instead
@@ -27,7 +30,12 @@
 
         End Function
 
-        Public Overrides Function CreateInstance(provider As IServiceProvider, objectType As Type, argTypes As Type(), args As Object()) As Object
+        Public Overrides Function CreateInstance(
+                                                  provider As IServiceProvider,
+                                                  objectType As Type,
+                                                  argTypes As Type(),
+                                                  args As Object()
+                                                ) As Object
 
             ' If the designer Is asking to create the abstract 
             ' control, instantiate the "concrete" version of it instead

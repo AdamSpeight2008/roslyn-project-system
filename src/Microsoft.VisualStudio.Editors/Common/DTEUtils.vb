@@ -37,7 +37,10 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="Name">The key to check for.</param>
         ''' <returns>The ProjectItem for the given key, if found, else Nothing.  Throws exceptions only in unexpected cases.</returns>
         ''' <remarks></remarks>
-        Public Shared Function QueryProjectItems(ProjectItems As ProjectItems, Name As String) As ProjectItem
+        Public Shared Function QueryProjectItems(
+                                                  ProjectItems As ProjectItems,
+                                                  Name As String
+                                                ) As ProjectItem
             Return ResourceEditor.ResourcesFolderService.QueryProjectItems(ProjectItems, Name)
         End Function
 
@@ -49,36 +52,32 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="Project">The project.</param>
         ''' <returns>The full path of the templates directory for that project.</returns>
         ''' <remarks></remarks>
-        Public Shared Function GetProjectTemplateDirectory(Project As Project) As String
+        Public Shared Function GetProjectTemplateDirectory(
+                                                            Project As Project
+                                                          ) As String
             Return Project.DTE.Solution.ProjectItemsTemplatePath(Project.Kind)
         End Function
 
 
-        ''' <summary>
-        ''' Retrieves the directory name on disk for a ProjectItems collection.
-        ''' </summary>
+        ''' <summary> Retrieves the directory name on disk for a ProjectItems collection. </summary>
         ''' <param name="ProjectItems">The ProjectItems collection to check.  Must refer to a physical folder on disk.</param>
         ''' <returns>The directory name of the collection on disk.</returns>
-        ''' <remarks></remarks>
-        Public Shared Function GetFolderNameFromProjectItems(ProjectItems As ProjectItems) As String
+        Public Shared Function GetFolderNameFromProjectItems(
+                                                              ProjectItems As ProjectItems
+                                                            ) As String
             Return ResourceEditor.ResourcesFolderService.GetFolderNameFromProjectItems(ProjectItems)
         End Function
 
-        ''' <summary>
-        ''' Get the current EnvDTE.Project instance for the project containing the .settings
-        ''' file
-        ''' </summary>
-        ''' <remarks></remarks>
-        Friend Shared Function EnvDTEProject(VsHierarchy As IVsHierarchy) As EnvDTE.Project
+        ''' <summary> Get the current EnvDTE.Project instance for the project containing the .settings file. </summary>
+        Friend Shared Function EnvDTEProject(
+                                              VsHierarchy As IVsHierarchy
+                                            ) As EnvDTE.Project
             Dim ProjectObj As Object = Nothing
             VSErrorHandler.ThrowOnFailure(VsHierarchy.GetProperty(VSITEMID.ROOT, __VSHPROPID.VSHPROPID_ExtObject, ProjectObj))
             Return CType(ProjectObj, EnvDTE.Project)
         End Function
 
-        ''' <summary>
-        ''' Get the current EnvDTE.Project instance for the project associated with the ProjectUniqueName
-        ''' </summary>
-        ''' <remarks></remarks>
+        ''' <summary> Get the current EnvDTE.Project instance for the project associated with the ProjectUniqueName. </summary>
         Friend Shared Function EnvDTEProjectFromProjectUniqueName(ProjectUniqueName As String) As EnvDTE.Project
 
             Dim SolutionService As IVsSolution = TryCast(VBPackage.GetGlobalService(GetType(IVsSolution)), IVsSolution)
@@ -89,14 +88,13 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Return Nothing
         End Function
 
-        ''' <summary>
-        ''' Get EnvDTE.ProjectItem from hierarchy and itemid
-        ''' </summary>
-        ''' <param name="VsHierarchy"></param>
-        ''' <param name="ItemId"></param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Public Shared Function ProjectItemFromItemId(VsHierarchy As IVsHierarchy, ItemId As UInteger) As ProjectItem
+        ''' <summary>' Get EnvDTE.ProjectItem from hierarchy and itemid. </summary>
+        ''' <param name="VsHierarchy"/>
+        ''' <param name="ItemId"/>
+        Public Shared Function ProjectItemFromItemId(
+                                                      VsHierarchy As IVsHierarchy,
+                                                      ItemId As UInteger
+                                                    ) As ProjectItem
             Dim ExtensibilityObject As Object = Nothing
             VSErrorHandler.ThrowOnFailure(VsHierarchy.GetProperty(CUInt(ItemId), CInt(__VSHPROPID.VSHPROPID_ExtObject), ExtensibilityObject))
             Debug.Assert(ExtensibilityObject IsNot Nothing AndAlso TypeOf ExtensibilityObject Is ProjectItem)
@@ -104,15 +102,15 @@ Namespace Microsoft.VisualStudio.Editors.Common
         End Function
 
 
-        ''' <summary>
-        ''' Finds all files within a given ProjectItem that contain the given extension
-        ''' </summary>
+        ''' <summary> Finds all files within a given ProjectItem that contain the given extension. </summary>
         ''' <param name="ProjectItems">The ProjectItems node to search through</param>
         ''' <param name="Extension">The extension to search for, including the period.  E.g. ".resx"</param>
         ''' <param name="SearchChildren">If True, the search will continue to children.</param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Public Shared Function FindAllFilesWithExtension(ProjectItems As ProjectItems, Extension As String, SearchChildren As Boolean) As List(Of ProjectItem)
+        Public Shared Function FindAllFilesWithExtension(
+                                                          ProjectItems As ProjectItems,
+                                                          Extension As String,
+                                                          SearchChildren As Boolean
+                                                        ) As List(Of ProjectItem)
             Dim ResXFiles As New List(Of ProjectItem)
             For Each Item As ProjectItem In ProjectItems
 
@@ -125,13 +123,13 @@ Namespace Microsoft.VisualStudio.Editors.Common
         End Function
 
 
-        ''' <summary>
-        ''' Get the file name from a project item.
-        ''' </summary>
-        ''' <param name="ProjectItem"></param>
-        ''' <returns></returns>
+        ''' <summary> Get the file name from a project item. </summary>
+        ''' <param name="ProjectItem"/>
         ''' <remarks>If the item contains of multiple files, the first one is returned</remarks>
-        Public Shared Function FileNameFromProjectItem(ProjectItem As EnvDTE.ProjectItem) As String
+        Public Shared Function FileNameFromProjectItem(
+                                                        ProjectItem As EnvDTE.ProjectItem
+                                                      ) As String
+
             If ProjectItem Is Nothing Then
                 System.Diagnostics.Debug.Fail("Can't get file name for NULL project item!")
                 Throw New System.ArgumentNullException()
@@ -147,13 +145,12 @@ Namespace Microsoft.VisualStudio.Editors.Common
         End Function
 
 
-        ''' <summary>
-        ''' Retrieves the given project item's property, if it exists, else Nothing
-        ''' </summary>
+        ''' <summary> Retrieves the given project item's property, if it exists, else Nothing. </summary>
         ''' <param name="PropertyName">The name of the property to retrieve.</param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Public Shared Function GetProjectItemProperty(ProjectItem As ProjectItem, PropertyName As String) As [Property]
+        Public Shared Function GetProjectItemProperty(
+                                                       ProjectItem As ProjectItem,
+                                                       PropertyName As String
+                                                     ) As [Property]
             If ProjectItem.Properties Is Nothing Then Return Nothing
             For Each Prop As [Property] In ProjectItem.Properties
                 If Prop.Name.Equals(PropertyName, StringComparison.OrdinalIgnoreCase) Then Return Prop
@@ -164,7 +161,10 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
         ''' <summary>Retrieves the given project's property, if it exists, else Nothing.</summary>
         ''' <param name="PropertyName">The name of the property to retrieve.</param>
-        Public Shared Function GetProjectProperty(Project As Project, PropertyName As String) As [Property]
+        Public Shared Function GetProjectProperty(
+                                                   Project As Project,
+                                                   PropertyName As String
+                                                 ) As [Property]
             If Project.Properties Is Nothing Then Return Nothing
             For Each Prop As [Property] In Project.Properties
                 If Prop.Name.Equals(PropertyName, StringComparison.OrdinalIgnoreCase) Then Return Prop
@@ -176,7 +176,10 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <summary>Given a DTE project, returns the active IVsCfg configuration for it.</summary>
         ''' <param name="Project">The DTE project</param>
         ''' <param name="VsCfgProvider">The IVsCfgProvider2 interface instance to look up the active configuration from</param>
-        Public Shared Function GetActiveConfiguration(Project As Project, VsCfgProvider As IVsCfgProvider2) As IVsCfg
+        Public Shared Function GetActiveConfiguration(
+                                                       Project As Project,
+                                                       VsCfgProvider As IVsCfgProvider2
+                                                     ) As IVsCfg
             Dim VsCfg As IVsCfg = Nothing
             With GetActiveDTEConfiguration(Project)
                 VSErrorHandler.ThrowOnFailure(VsCfgProvider.GetCfgOfName(.ConfigurationName, .PlatformName, VsCfg))
@@ -187,7 +190,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
         ''' <summary>Given a DTE project, returns the active DTE configuration object for it.</summary>
         ''' <param name="Project">The DTE project</param>
-        Public Shared Function GetActiveDTEConfiguration(Project As Project) As EnvDTE.Configuration
+        Public Shared Function GetActiveDTEConfiguration(
+                                                          Project As Project
+                                                        ) As EnvDTE.Configuration
             Try
                 Return Project.ConfigurationManager.ActiveConfiguration
             Catch ex As ArgumentException
@@ -205,11 +210,12 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '''   If this project system doesn't have that property, this call is a NOP.
         ''' </summary>
         ''' <param name="Item">The ProjectItem on which to set the property</param>
-        Public Shared Sub SetBuildAction(Item As ProjectItem, BuildAction As VSLangProj.prjBuildAction)
-            Dim BuildActionProperty As [Property] = GetProjectItemProperty(Item, s_PROJECTPROPERTY_BUILDACTION)
-            If BuildActionProperty IsNot Nothing Then
-                BuildActionProperty.Value = BuildAction
-            End If
+        Public Shared Sub SetBuildAction(
+                                          Item As ProjectItem,
+                                          BuildAction As VSLangProj.prjBuildAction
+                                        )
+            Dim BuildActionProperty = GetProjectItemProperty(Item, s_PROJECTPROPERTY_BUILDACTION)
+            If BuildActionProperty IsNot Nothing Then BuildActionProperty.Value = BuildAction
         End Sub
 
         ''' <summary>
@@ -217,7 +223,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '''   If this project system doesn't have that property, returns prjBuildActionNone.
         ''' </summary>
         ''' <param name="Item">The ProjectItem on which to set the property</param>
-        Public Shared Function GetBuildAction(Item As ProjectItem) As VSLangProj.prjBuildAction
+        Public Shared Function GetBuildAction(
+                                               Item As ProjectItem
+                                             ) As VSLangProj.prjBuildAction
             Dim BuildActionProperty As [Property] = GetProjectItemProperty(Item, s_PROJECTPROPERTY_BUILDACTION)
             If BuildActionProperty IsNot Nothing Then Return CType(BuildActionProperty.Value, VSLangProj.prjBuildAction)
             Return VSLangProj.prjBuildAction.prjBuildActionNone
@@ -232,8 +240,10 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' This version of the function uses newer functionality in Visual Studio, and is necessary for more
         '''   recent build actions, such as the WPF build actions, that weren't available in the original enumeration.
         ''' </remarks>
-        Public Shared Sub SetBuildActionAsString(item As ProjectItem, buildAction As String)
-
+        Public Shared Sub SetBuildActionAsString(
+                                                  item As ProjectItem,
+                                                  buildAction As String
+                                                )
             Dim BuildActionProperty As [Property] = GetProjectItemProperty(item, s_PROJECTPROPERTY_MSBUILD_ITEMTYPE)
             If BuildActionProperty IsNot Nothing Then BuildActionProperty.Value = buildAction
         End Sub
@@ -244,11 +254,12 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' </summary>
         ''' <param name="Item">The ProjectItem on which to set the property</param>
         ''' <remarks></remarks>
-        Public Shared Function GetBuildActionAsString(Item As ProjectItem) As String
+        Public Shared Function GetBuildActionAsString(
+                                                       Item As ProjectItem
+                                                     ) As String
             Dim BuildActionProperty As [Property] = GetProjectItemProperty(Item, s_PROJECTPROPERTY_MSBUILD_ITEMTYPE)
             If BuildActionProperty Is Nothing Then Return String.Empty
             Return CType(BuildActionProperty.Value, String)
-
         End Function
 
         ''' ;FindProjectItem
@@ -256,7 +267,11 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' Given ProjectItems and a file name, find and return a ProjectItem in this ProjectItems 
         ''' with the same file name. If none is found, return NULL.
         ''' </summary>
-        Public Shared Function FindProjectItem(projectItems As ProjectItems, fileName As String) As ProjectItem
+        Public Shared Function FindProjectItem(
+                                                projectItems As ProjectItems,
+                                                fileName As String
+                                              ) As ProjectItem
+
             For Each projectItem As ProjectItem In projectItems
                 If projectItem.Kind.Equals(
                     EnvDTE.Constants.vsProjectItemKindPhysicalFile, StringComparison.OrdinalIgnoreCase) AndAlso projectItem.FileCount > 0 Then
@@ -272,13 +287,18 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <summary>
         ''' From a hierarchy and projectitem, return the item id
         ''' </summary>
-        Public Shared Function ItemIdOfProjectItem(Hierarchy As IVsHierarchy, ProjectItem As EnvDTE.ProjectItem) As UInteger
+        Public Shared Function ItemIdOfProjectItem(
+                                                    Hierarchy As IVsHierarchy,
+                                                    ProjectItem As EnvDTE.ProjectItem
+                                                  ) As UInteger
             Dim FoundItemId As UInteger
             VSErrorHandler.ThrowOnFailure(Hierarchy.ParseCanonicalName(ProjectItem.FileNames(1), FoundItemId))
             Return FoundItemId
         End Function
 
-        Public Shared Sub ApplyTreeViewThemeStyles(handle As IntPtr)
+        Public Shared Sub ApplyTreeViewThemeStyles(
+                                                    handle As IntPtr
+                                                  )
 
             Dim ShellUIService As IVsUIShell5 = TryCast(VBPackage.GetGlobalService(GetType(SVsUIShell)), IVsUIShell5)
 
@@ -302,7 +322,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
             End If
         End Sub
 
-        Public Shared Sub ApplyListViewThemeStyles(handle As IntPtr)
+        Public Shared Sub ApplyListViewThemeStyles(
+                                                    handle As IntPtr
+                                                  )
             ' set window theme
             Interop.NativeMethods.SetWindowTheme(handle, "Explorer", Nothing)
 

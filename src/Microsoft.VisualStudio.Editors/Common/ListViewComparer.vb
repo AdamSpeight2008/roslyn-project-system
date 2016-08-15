@@ -14,24 +14,25 @@ Namespace Microsoft.VisualStudio.Editors.Common
     Friend Class ListViewComparer
         Implements IComparer
 
-        '<Summary>Which column should be used to sort the list? Start from 0.</Summary>
+        '''<Summary>Which column should be used to sort the list? Start from 0.</Summary>
         Public Property SortColumn() As Integer
 
-        '<Summary>Which order, Ascending or Descending.</Summary>
+        '''<Summary>Which order, Ascending or Descending.</Summary>
         Public Property Sorting() As SortOrder = SortOrder.Ascending
 
-        '<Summary>Compare two list items.</Summary>
+        '''<Summary>Compare two list items.</Summary>
         Public Function Compare(
                                  x As Object,
                                  y As Object
                                ) As Integer Implements System.Collections.IComparer.Compare
+
             Dim ret As Integer = String.Compare(GetColumnValue(x, _SortColumn), GetColumnValue(y, _SortColumn), StringComparison.OrdinalIgnoreCase)
             If ret = 0 AndAlso _SortColumn <> 0 Then ret = String.Compare(GetColumnValue(x, 0), GetColumnValue(y, 0), StringComparison.OrdinalIgnoreCase)
             If Sorting = SortOrder.Descending Then ret = -ret
             Return ret
         End Function
 
-        '<Summary>Get String Value of one column.</Summary>
+        '''<Summary>Get String Value of one column.</Summary>
         Private Function GetColumnValue(
                                          obj As Object,
                                          column As Integer
@@ -42,7 +43,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                 Return listItem.SubItems.Item(column).Text
             End If
 
-            Debug.Fail("RefComparer: obj was not an ListViewItem")
+            Debug.Fail(NameOf(ListViewComparer) & ": obj was not an " & NameOf(ListViewItem))
             Return String.Empty
         End Function
 

@@ -17,10 +17,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ' exception to abort the operation.
         Public Const HR_E_CSHARP_USER_CANCEL As Integer = &H80040103
 
-        ''' <summary>
-        ''' This is a shared class - disallow instantation.
-        ''' </summary>
-        ''' <remarks></remarks>
+        ''' <summary> This is a shared class - disallow instantation. </summary>
         Private Sub New()
         End Sub
 
@@ -35,7 +32,12 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '''   will return any function that handles the given event, regardless of name</param>
         ''' <returns>The function which handles the given event and (optionally) has the given name.</returns>
         ''' <remarks></remarks>
-        Public Shared Function FindEventHandler(Elements As CodeElements, EventName As String, EventHandlerFunctionName As String, AllowMatchToOnlyEventName As Boolean) As CodeFunction
+        Public Shared Function FindEventHandler(
+                                                 Elements As CodeElements,
+                                                 EventName As String,
+                                                 EventHandlerFunctionName As String,
+                                                 AllowMatchToOnlyEventName As Boolean
+                                               ) As CodeFunction
             Dim ExistingHandler As CodeFunction
 
             'First try to match both event handler function name and handled event name
@@ -49,9 +51,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         End Function
 
 
-        ''' <summary>
-        ''' Helper function for FindEventHandler.
-        ''' </summary>
+        ''' <summary> Helper function for FindEventHandler. </summary>
         ''' <param name="Elements">CodeElements to search through</param>
         ''' <param name="EventName">Handled event name to search for</param>
         ''' <param name="EventHandlerFunctionName">Handled event handler function name to search for.  May be Nothing/empty.</param>
@@ -101,7 +101,14 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="Access">The access level (private/friend/etc)</param>
         ''' <returns>The existing or newly-created event handler function.</returns>
         ''' <remarks>This function is currently written only to work with VB.</remarks>
-        Public Shared Function TryAddEventHandler(CodeClass As CodeClass, EventName As String, EventHandlerFunctionName As String, EventArgsType As Type, Access As vsCMAccess) As CodeFunction
+        Public Shared Function TryAddEventHandler(
+                                                   CodeClass As CodeClass,
+                                                   EventName As String,
+                                                   EventHandlerFunctionName As String,
+                                                   EventArgsType As Type,
+                                                   Access As vsCMAccess
+                                                 ) As CodeFunction
+
             Dim HandlerFunction As CodeFunction = FindEventHandler(CodeClass.Members, EventName, EventHandlerFunctionName, True)
             If HandlerFunction Is Nothing Then
                 'Doesn't exist.  Let's add a handling method
@@ -120,12 +127,11 @@ Namespace Microsoft.VisualStudio.Editors.Common
         End Function
 
 
-        ''' <summary>
-        ''' Navigates to the given function in the code editor.
-        ''' </summary>
+        ''' <summary> Navigates to the given function in the code editor. </summary>
         ''' <param name="Func">The function to navigate to.</param>
-        ''' <remarks></remarks>
-        Public Shared Sub NavigateToFunction(Func As CodeFunction)
+        Public Shared Sub NavigateToFunction(
+                                              Func As CodeFunction
+                                            )
             Try
                 'Ensure the document is activated
                 If Func.ProjectItem IsNot Nothing Then

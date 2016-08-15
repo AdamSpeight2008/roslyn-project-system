@@ -10,17 +10,23 @@ Namespace Microsoft.VisualStudio.Editors.AddImports
         ' Package Service Provider
         Private _serviceProvider As IServiceProvider
 
-        ''' <summary>
-        ''' Constructor
-        ''' </summary>
-        ''' <param name="packageServiceProvider"></param>
-        ''' <remarks></remarks>
-        Friend Sub New(packageServiceProvider As IServiceProvider)
+        ''' <summary> Constructor </summary>
+        ''' <param name="packageServiceProvider"/>
+        Friend Sub New(
+                        packageServiceProvider As IServiceProvider
+                      )
             If packageServiceProvider Is Nothing Then Throw New ArgumentNullException(NameOf(packageServiceProvider))
             _serviceProvider = packageServiceProvider
         End Sub
 
-        Public Function ShowDialog([namespace] As String, identifier As String, minimallyQualifiedName As String, dialogType As AddImportsDialogType, helpCallBack As IVBAddImportsDialogHelpCallback) As AddImportsResult Implements IVBAddImportsDialogService.ShowDialog
+        Public Function ShowDialog(
+                                    [namespace] As String,
+                                    identifier As String,
+                                    minimallyQualifiedName As String,
+                                    dialogType As AddImportsDialogType,
+                                    helpCallBack As IVBAddImportsDialogHelpCallback
+                                  ) As AddImportsResult Implements IVBAddImportsDialogService.ShowDialog
+
             Select Case dialogType
                 Case AddImportsDialogType.AddImportsCollisionDialog
                     Using d As New AutoAddImportsCollisionDialog([namespace], identifier, minimallyQualifiedName, helpCallBack, _serviceProvider)
@@ -45,7 +51,7 @@ Namespace Microsoft.VisualStudio.Editors.AddImports
                         End If
                     End Using
                 Case Else
-                    Throw New InvalidOperationException("Unexpected Dialog Type")
+                    Throw New InvalidOperationException("Unexpected Dialog Type ( " & dialogType.ToString() & ")")
             End Select
         End Function
 

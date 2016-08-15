@@ -44,41 +44,27 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Dim singlePixelWidth = DpiHelper.LogicalToDeviceUnitsX(1)
             Dim dividerLineVerticalPadding = DpiHelper.LogicalToDeviceUnitsY(4)
 
-            _dropDownRectangle = New Rectangle(x:=bounds.Right - _pushButtonWidth - singlePixelWidth,
-                                                y:=dividerLineVerticalPadding,
-                                                width:=_pushButtonWidth,
-                                                height:=bounds.Height - (dividerLineVerticalPadding * 2))
+            _dropDownRectangle = New Rectangle(x:=bounds.Right - _pushButtonWidth - singlePixelWidth, y:=dividerLineVerticalPadding,
+                                               width:=_pushButtonWidth, height:=bounds.Height - (dividerLineVerticalPadding * 2))
 
             ' Draw divider line
             If RightToLeft.Equals(RightToLeft.Yes) Then
                 _dropDownRectangle.X = bounds.Left + singlePixelWidth
 
-                g.DrawLine(SystemPens.ButtonHighlight,
-                    x1:=bounds.Left + _pushButtonWidth,
-                    y1:=dividerLineVerticalPadding,
-                    x2:=bounds.Left + _pushButtonWidth,
-                    y2:=bounds.Bottom - dividerLineVerticalPadding)
+                g.DrawLine(SystemPens.ButtonHighlight, x1:=bounds.Left + _pushButtonWidth, y1:=dividerLineVerticalPadding,
+                                                       x2:=bounds.Left + _pushButtonWidth, y2:=bounds.Bottom - dividerLineVerticalPadding)
 
-                g.DrawLine(SystemPens.ButtonShadow,
-                    x1:=bounds.Left + _pushButtonWidth + singlePixelWidth,
-                    y1:=dividerLineVerticalPadding,
-                    x2:=bounds.Left + _pushButtonWidth + singlePixelWidth,
-                    y2:=bounds.Bottom - dividerLineVerticalPadding)
+                g.DrawLine(SystemPens.ButtonShadow, x1:=bounds.Left + _pushButtonWidth + singlePixelWidth, y1:=dividerLineVerticalPadding,
+                                                    x2:=bounds.Left + _pushButtonWidth + singlePixelWidth, y2:=bounds.Bottom - dividerLineVerticalPadding)
 
                 bounds.Offset(_pushButtonWidth, 0)
                 bounds.Width = bounds.Width - _pushButtonWidth
             Else
-                g.DrawLine(SystemPens.ButtonHighlight,
-                    x1:=bounds.Right - _pushButtonWidth,
-                    y1:=dividerLineVerticalPadding,
-                    x2:=bounds.Right - _pushButtonWidth,
-                    y2:=bounds.Bottom - dividerLineVerticalPadding)
+                g.DrawLine(SystemPens.ButtonHighlight, x1:=bounds.Right - _pushButtonWidth, y1:=dividerLineVerticalPadding,
+                                                       x2:=bounds.Right - _pushButtonWidth, y2:=bounds.Bottom - dividerLineVerticalPadding)
 
-                g.DrawLine(SystemPens.ButtonShadow,
-                    x1:=bounds.Right - _pushButtonWidth - singlePixelWidth,
-                    y1:=dividerLineVerticalPadding,
-                    x2:=bounds.Right - _pushButtonWidth - singlePixelWidth,
-                    y2:=bounds.Bottom - dividerLineVerticalPadding)
+                g.DrawLine(SystemPens.ButtonShadow, x1:=bounds.Right - _pushButtonWidth - singlePixelWidth, y1:=dividerLineVerticalPadding,
+                                                    x2:=bounds.Right - _pushButtonWidth - singlePixelWidth, y2:=bounds.Bottom - dividerLineVerticalPadding)
 
                 bounds.Width = bounds.Width - _pushButtonWidth
             End If
@@ -97,49 +83,59 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
             If Not String.IsNullOrEmpty(Me.Text) Then
                 Dim foreColor = SystemColors.ControlText
-                If Not Me.Enabled Then
-                    foreColor = SystemColors.GrayText
-                End If
+                If Not Me.Enabled Then foreColor = SystemColors.GrayText
 
                 TextRenderer.DrawText(g, Me.Text, Me.Font, bounds, foreColor, FormatFlags)
             End If
 
             If Focused Then
-                bounds.Inflate(
-                    width:=DpiHelper.LogicalToDeviceUnitsX(-4),
-                    height:=DpiHelper.LogicalToDeviceUnitsY(-4))
+                bounds.Inflate(width:=DpiHelper.LogicalToDeviceUnitsX(-4), height:=DpiHelper.LogicalToDeviceUnitsY(-4))
 
                 ControlPaint.DrawFocusRectangle(g, bounds)
             End If
         End Sub
 
-        Protected Overrides Sub OnKeyDown(kevent As KeyEventArgs)
+        Protected Overrides Sub OnKeyDown(
+                                           kevent As KeyEventArgs
+                                         )
             If kevent.KeyCode.Equals(Keys.Down) Then ShowContextMenuOrContextMenuStrip()
         End Sub
 
-        Protected Overrides Function IsInputKey(keyData As Keys) As Boolean
+        Protected Overrides Function IsInputKey(
+                                                 keyData As Keys
+                                               ) As Boolean
             If keyData.Equals(Keys.Down) Then Return True
             Return MyBase.IsInputKey(keyData)
         End Function
 
-        Protected Overrides Sub OnEnabledChanged(e As EventArgs)
+        Protected Overrides Sub OnEnabledChanged(
+                                                  e As EventArgs
+                                                )
             SetButtonDrawState()
             MyBase.OnEnabledChanged(e)
         End Sub
 
-        Protected Overrides Sub OnGotFocus(e As EventArgs)
+        Protected Overrides Sub OnGotFocus(
+                                            e As EventArgs
+                                          )
             If Not State.Equals(PushButtonState.Pressed) AndAlso Not State.Equals(PushButtonState.Disabled) Then State = PushButtonState.Default
         End Sub
 
-        Protected Overrides Sub OnLostFocus(e As EventArgs)
+        Protected Overrides Sub OnLostFocus(
+                                             e As EventArgs
+                                           )
             If Not State.Equals(PushButtonState.Pressed) AndAlso Not State.Equals(PushButtonState.Disabled) Then State = PushButtonState.Normal
         End Sub
 
-        Protected Overrides Sub OnMouseEnter(e As EventArgs)
+        Protected Overrides Sub OnMouseEnter(
+                                              e As EventArgs
+                                            )
             If Not State.Equals(PushButtonState.Pressed) AndAlso Not State.Equals(PushButtonState.Disabled) Then State = PushButtonState.Hot
         End Sub
 
-        Protected Overrides Sub OnMouseLeave(e As EventArgs)
+        Protected Overrides Sub OnMouseLeave(
+                                              e As EventArgs
+                                            )
             If Not State.Equals(PushButtonState.Disabled) AndAlso Not State.Equals(PushButtonState.Pressed) Then
                 If Me.Focused Then
                     State = PushButtonState.Default
@@ -149,7 +145,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
             End If
         End Sub
 
-        Public Overrides Function GetPreferredSize(proposedSize As Size) As Size
+        Public Overrides Function GetPreferredSize(
+                                                    proposedSize As Size
+                                                  ) As Size
             Dim preferredSize = MyBase.GetPreferredSize(proposedSize)
             If Not String.IsNullOrEmpty(Me.Text) AndAlso ((TextRenderer.MeasureText(Me.Text, Me.Font).Width + _pushButtonWidth) > preferredSize.Width) Then
                 Return preferredSize + New Size(_pushButtonWidth, 0)
@@ -158,7 +156,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Return preferredSize
         End Function
 
-        Protected Overrides Sub OnMouseDown(mevent As MouseEventArgs)
+        Protected Overrides Sub OnMouseDown(
+                                             mevent As MouseEventArgs
+                                           )
             _showCustomContextMenuWasHandled = False
             If _dropDownRectangle.Contains(mevent.Location) Then
                 ShowContextMenuOrContextMenuStrip()
@@ -167,7 +167,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
             End If
         End Sub
 
-        Protected Overrides Sub OnMouseUp(mevent As MouseEventArgs)
+        Protected Overrides Sub OnMouseUp(
+                                           mevent As MouseEventArgs
+                                         )
             If _showCustomContextMenuWasHandled Then Return
             If Me.ContextMenuStrip Is Nothing OrElse Not Me.ContextMenuStrip.Visible Then
                 SetButtonDrawState()
@@ -179,6 +181,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
         Private Sub ShowContextMenuOrContextMenuStrip()
             State = PushButtonState.Pressed
+
             If Me.ContextMenuStrip IsNot Nothing Then
                 AddHandler Me.ContextMenuStrip.Closed, AddressOf Me.ContextMenuStrip_Closed
                 Me.ContextMenuStrip.Show(Me, 0, Me.Height)
@@ -189,15 +192,16 @@ Namespace Microsoft.VisualStudio.Editors.Common
                 Catch ex As Exception When Utils.ReportWithoutCrash(ex, NameOf(ShowContextMenuOrContextMenuStrip), NameOf(SplitButton))
                 End Try
 
-                If e.Handled Then
-                    _showCustomContextMenuWasHandled = True
-                End If
+                If e.Handled Then _showCustomContextMenuWasHandled = True
 
                 SetButtonDrawState()
             End If
         End Sub
 
-        Private Sub ContextMenuStrip_Closed(sender As Object, e As ToolStripDropDownClosedEventArgs)
+        Private Sub ContextMenuStrip_Closed(
+                                             sender As Object,
+                                             e As ToolStripDropDownClosedEventArgs
+                                           )
             Dim cms = CType(sender, ContextMenuStrip)
             RemoveHandler cms.Closed, AddressOf Me.ContextMenuStrip_Closed
 
@@ -228,7 +232,11 @@ Namespace Microsoft.VisualStudio.Editors.Common
             End Set
         End Property
 
-        Private Sub PaintArrow(g As Graphics, dropDownRect As Rectangle)
+        Private Sub PaintArrow(
+                                g As Graphics,
+                                dropDownRect As Rectangle
+                              )
+
             Dim middle = New Point(Convert.ToInt32(dropDownRect.Left + dropDownRect.Width / 2), Convert.ToInt32(dropDownRect.Top + dropDownRect.Height / 2))
 
             ' if the width is odd - favor pushing it over one pixel right.
