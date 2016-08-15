@@ -21,7 +21,7 @@ Namespace Microsoft.VisualStudio.Editors.VBAttributeEditor
     '   Builder Service Class. Implements SVbPermissionSetService 
     '   exposed via the IVbPermissionSetService interface.
     '--------------------------------------------------------------------------
-    <CLSCompliant(False)> _
+    <CLSCompliant(False)>
     Friend NotInheritable Class PermissionSetService
         Implements Interop.IVbPermissionSetService
 
@@ -43,9 +43,7 @@ Namespace Microsoft.VisualStudio.Editors.VBAttributeEditor
 
             ' Add the child nodes
             For Each node As XmlNode In element.ChildNodes
-                If node.NodeType = XmlNodeType.Element Then
-                    securityElement.AddChild(CreateSecurityElementFromXmlElement(CType(node, XMLElement)))
-                End If
+                If node.NodeType = XmlNodeType.Element Then securityElement.AddChild(CreateSecurityElementFromXmlElement(CType(node, XmlElement)))
             Next
 
             Return securityElement
@@ -67,8 +65,7 @@ Namespace Microsoft.VisualStudio.Editors.VBAttributeEditor
 
         Private Function DocDataToStream(doc As DocData) As Stream
             Dim retStream As New MemoryStream()
-            Using docReader As New DocDataTextReader(doc, False)
-                Dim writer As New StreamWriter(retStream)
+            Using docReader As New DocDataTextReader(doc, False), writer As New StreamWriter(retStream)
                 writer.Write(docReader.ReadToEnd())
                 writer.Flush()
                 retStream.Seek(0, SeekOrigin.Begin)
@@ -76,7 +73,11 @@ Namespace Microsoft.VisualStudio.Editors.VBAttributeEditor
             Return retStream
         End Function
 
-        Public Function ComputeZonePermissionSet(strManifestFileName As String, strTargetZone As String, strExcludedPermissions As String) As Object Implements Interop.IVbPermissionSetService.ComputeZonePermissionSet
+        Public Function ComputeZonePermissionSet(
+                                                  strManifestFileName As String,
+                                                  strTargetZone As String,
+                                                  strExcludedPermissions As String
+                                                ) As Object Implements Interop.IVbPermissionSetService.ComputeZonePermissionSet
 
             Try
 
@@ -84,40 +85,25 @@ Namespace Microsoft.VisualStudio.Editors.VBAttributeEditor
 
                 If (strManifestFileName IsNot Nothing) AndAlso (strManifestFileName.Length > 0) Then
 
-                    Dim manifestInfo As New TrustInfo
-                    manifestInfo.PreserveFullTrustPermissionSet = True
-
+                    Dim manifestInfo As New TrustInfo With {.PreserveFullTrustPermissionSet = True}
                     Try
                         Using appManifestDocData As New DocData(_serviceProvider, strManifestFileName)
-
                             manifestInfo.ReadManifest(DocDataToStream(appManifestDocData))
-
                         End Using
-
                         projectPermissionSet = manifestInfo.PermissionSet
-
                     Catch
-
                         ' If this fails, there is no project permission set
-
                     End Try
 
-                    If manifestInfo.IsFullTrust Then
-                        Return Nothing
-                    End If
+                    If manifestInfo.IsFullTrust Then Return Nothing
 
                 End If
 
                 Dim identityList As String() = Nothing
 
-                If (strExcludedPermissions IsNot Nothing) AndAlso (strExcludedPermissions.Length > 0) Then
-                    identityList = StringToIdentityList(strExcludedPermissions)
-                End If
+                If (strExcludedPermissions IsNot Nothing) AndAlso (strExcludedPermissions.Length > 0) Then identityList = StringToIdentityList(strExcludedPermissions)
 
-                Return SecurityUtilities.ComputeZonePermissionSet(
-                    strTargetZone,
-                    projectPermissionSet,
-                    identityList)
+                Return SecurityUtilities.ComputeZonePermissionSet(strTargetZone, projectPermissionSet, identityList)
 
             Catch ex As Exception When Common.Utils.ReportWithoutCrash(ex, NameOf(ComputeZonePermissionSet), NameOf(PermissionSetService))
             End Try
@@ -126,7 +112,11 @@ Namespace Microsoft.VisualStudio.Editors.VBAttributeEditor
 
         End Function
 
-        Public Function IsAvailableInProject(strPermissionSet As String, ProjectPermissionSet As Object, ByRef isAvailable As Boolean) As Integer Implements Interop.IVbPermissionSetService.IsAvailableInProject
+        Public Function IsAvailableInProject(
+                                              strPermissionSet As String,
+                                              ProjectPermissionSet As Object,
+                                        ByRef isAvailable As Boolean
+                                            ) As Integer Implements Interop.IVbPermissionSetService.IsAvailableInProject
 
             Try
 
@@ -153,7 +143,10 @@ Namespace Microsoft.VisualStudio.Editors.VBAttributeEditor
         End Function
 
         ' Returns S_FALSE if there is no tip
-        Public Function GetRequiredPermissionsTip(strPermissionSet As String, ByRef strTip As String) As Integer Implements Interop.IVbPermissionSetService.GetRequiredPermissionsTip
+        Public Function GetRequiredPermissionsTip(
+                                                   strPermissionSet As String,
+                                             ByRef strTip As String
+                                                 ) As Integer Implements Interop.IVbPermissionSetService.GetRequiredPermissionsTip
 
             Dim hasTip As Boolean = False
 
@@ -193,16 +186,13 @@ Namespace Microsoft.VisualStudio.Editors.VBAttributeEditor
             Catch ex As Exception When Common.Utils.ReportWithoutCrash(ex, NameOf(IsAvailableInProject), NameOf(PermissionSetService))
             End Try
 
-            If hasTip Then
-                Return NativeMethods.S_OK
-            Else
-                Return NativeMethods.S_FALSE
-            End If
+            If hasTip Then Return NativeMethods.S_OK
+            Return NativeMethods.S_FALSE
         End Function
 
 
         Private Shared Function StringToIdentityList(s As String) As String()
-            Dim a() As String = s.Split(CChar(";"))
+            Dim a() As String = s.Split(";"c)
             For i As Integer = 0 To a.Length - 1
                 a(i) = a(i).Trim()
             Next

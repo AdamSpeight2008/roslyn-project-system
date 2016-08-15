@@ -57,44 +57,43 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="EventHandlerFunctionName">Handled event handler function name to search for.  May be Nothing/empty.</param>
         ''' <returns>The function which handles the given event and (optionally) has the given name.</returns>
         ''' <remarks>This function only works with VB as currently written.</remarks>
-        Public Shared Function FindEventHandlerHelper(Elements As CodeElements, EventName As String, EventHandlerFunctionName As String) As CodeFunction
+        Public Shared Function FindEventHandlerHelper(
+                                                       Elements As CodeElements,
+                                                       EventName As String,
+                                                       EventHandlerFunctionName As String
+                                                     ) As CodeFunction
+
             For Each element As CodeElement In Elements
+
                 If element.Kind = vsCMElement.vsCMElementFunction Then
                     Dim Func As CodeFunction = DirectCast(element, CodeFunction)
-                    If Func.FunctionKind = vsCMFunction.vsCMFunctionSub Then
-                        'Check the name
-                        If EventHandlerFunctionName <> "" AndAlso Not String.Equals(Func.Name, EventHandlerFunctionName, StringComparison.OrdinalIgnoreCase) Then
-                            Continue For
-                        End If
 
+                    If Func.FunctionKind = vsCMFunction.vsCMFunctionSub Then
+
+                        'Check the name
+                        If EventHandlerFunctionName <> "" AndAlso Not String.Equals(Func.Name, EventHandlerFunctionName, StringComparison.OrdinalIgnoreCase) Then Continue For
                         'Verify that it handles the given event
                         Dim IEventHandler As Microsoft.VisualStudio.IEventHandler = TryCast(Func, Microsoft.VisualStudio.IEventHandler)
-                        If IEventHandler IsNot Nothing Then
-                            If IEventHandler.HandlesEvent(EventName) Then
-                                'Yes, it does.  We have a match.
-                                Return Func
-                            End If
-                        Else
-                            Debug.Fail("This code wasn't written for a non-VB language.  Couldn't get IEventHandler from CodeFunction.")
-                        End If
+                        If IEventHandler Is Nothing Then Debug.Fail("This code wasn't written for a non-VB language.  Couldn't get IEventHandler from CodeFunction.")
+                        If IEventHandler.HandlesEvent(EventName) Then Return Func 'Yes, it does.  We have a match.
                     End If
+
                 Else
+
                     'Dig deeper
                     'CONSIDER: using element.Children may not work for non-VB languages
                     Dim RecursiveResult As CodeFunction = FindEventHandlerHelper(element.Children, EventName, EventHandlerFunctionName)
-                    If RecursiveResult IsNot Nothing Then
-                        Return RecursiveResult
-                    End If
+                    If RecursiveResult IsNot Nothing Then Return RecursiveResult
+
                 End If
+
             Next
 
             Return Nothing
         End Function
 
 
-        ''' <summary>
-        ''' Adds an event handler to a given class, if it doesn't already exist.
-        ''' </summary>
+        ''' <summary>Adds an event handler to a given class, if it doesn't already exist.</summary>
         ''' <param name="CodeClass">The class in which to add the handler.</param>
         ''' <param name="EventName">The name of the event (e.g. "MyBase.Click")</param>
         ''' <param name="EventHandlerFunctionName">The name of the function (e.g. "Form1_Click")</param>
@@ -130,9 +129,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Try
                 'Ensure the document is activated
                 If Func.ProjectItem IsNot Nothing Then
-                    If Not Func.ProjectItem.IsOpen Then
-                        Func.ProjectItem.Open()
-                    End If
+                    If Not Func.ProjectItem.IsOpen Then Func.ProjectItem.Open()
                     Func.ProjectItem.Document.Activate()
                 End If
 
@@ -148,24 +145,22 @@ Namespace Microsoft.VisualStudio.Editors.Common
         End Sub
 
 
-        ''' <summary>
-        ''' Searches for a class with a given name
-        ''' </summary>
+        ''' <summary>Searches for a class with a given name.</summary>
         ''' <param name="CodeNamespace">The namespace to search through</param>
         ''' <param name="ClassName">The class name to search for</param>
         ''' <returns>The CodeClass if found, otherwise Nothing.</returns>
-        ''' <remarks></remarks>
-        Public Shared Function FindCodeClass(CodeNamespace As CodeNamespace, ClassName As String) As CodeClass
-            For Each Element As CodeElement In CodeNamespace.Members
-                If Element.Kind = vsCMElement.vsCMElementClass Then
-                    ' Consider, should we use language case sensitivity instead of ignore case here?
-                    If Element.Name.Equals(ClassName, StringComparison.OrdinalIgnoreCase) Then
-                        Return DirectCast(Element, CodeClass)
-                    End If
-                End If
-            Next
+        Public Shared Function FindCodeClass(
+                                              CodeNamespace As CodeNamespace,
+                                              ClassName As String
+                                            ) As CodeClass
 
+            For Each Element As CodeElement In CodeNamespace.Members
+                If Element.Kind <> vsCMElement.vsCMElementClass Then Continue For
+                ' Consider, should we use language case sensitivity instead of ignore case here?
+                If Element.Name.Equals(ClassName, StringComparison.OrdinalIgnoreCase) Then Return DirectCast(Element, CodeClass)
+            Next
             Return Nothing
+
         End Function
 
 
@@ -177,14 +172,16 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="ClassName">The class name to search for</param>
         ''' <returns>The CodeClass if found, otherwise Nothing.</returns>
         ''' <remarks></remarks>
-        Public Shared Function FindCodeClass(CodeElements As CodeElements, NamespaceName As String, ClassName As String) As CodeClass
+        Public Shared Function FindCodeClass(
+                                              CodeElements As CodeElements,
+                                              NamespaceName As String,
+                                              ClassName As String
+                                            ) As CodeClass
+
             For Each Element As CodeElement In CodeElements
-                If Element.Kind = vsCMElement.vsCMElementNamespace Then
-                    ' Consider, should we use language case sensitivity instead of ignore case here?
-                    If Element.Name.Equals(NamespaceName, StringComparison.OrdinalIgnoreCase) Then
-                        Return FindCodeClass(DirectCast(Element, CodeNamespace), ClassName)
-                    End If
-                End If
+                If Element.Kind <> vsCMElement.vsCMElementNamespace Then Continue For
+                ' Consider, should we use language case sensitivity instead of ignore case here?
+                If Element.Name.Equals(NamespaceName, StringComparison.OrdinalIgnoreCase) Then Return FindCodeClass(DirectCast(Element, CodeNamespace), ClassName)
             Next
 
             Return Nothing

@@ -12,32 +12,31 @@ Namespace Microsoft.VisualStudio.Editors.VBAttributeEditor.Interop
     '     Interface for the permission set service
     '     Must be kept in sync with its unmanaged version in vbidl.idl
     '--------------------------------------------------------------------------
-    <GuidAttribute("9DDDA35B-A903-4eca-AAFF-5716AF592D74")> _
-    <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)> _
-    <CLSCompliant(False)> _
-    <ComImport()> _
+    <GuidAttribute("9DDDA35B-A903-4eca-AAFF-5716AF592D74"),
+     InterfaceType(ComInterfaceType.InterfaceIsIUnknown),
+     CLSCompliant(False), ComImport>
     Friend Interface IVbPermissionSetService
 
-        <MethodImpl(MethodImplOptions.InternalCall)> _
-        Function ComputeZonePermissionSet( _
-            <InAttribute(), MarshalAs(UnmanagedType.BStr)> strAppManifestFileName As String, _
-            <InAttribute(), MarshalAs(UnmanagedType.BStr)> strTargetZone As String, _
-            <InAttribute(), MarshalAs(UnmanagedType.BStr)> strExcludedPermissions As String) _
-            As <MarshalAs(UnmanagedType.IUnknown)> Object
+        <MethodImpl(MethodImplOptions.InternalCall)>
+        Function ComputeZonePermissionSet(
+            <[In], MarshalAs(UnmanagedType.BStr)> strAppManifestFileName As String,
+            <[In], MarshalAs(UnmanagedType.BStr)> strTargetZone As String,
+            <[In], MarshalAs(UnmanagedType.BStr)> strExcludedPermissions As String
+            ) As <MarshalAs(UnmanagedType.IUnknown)> Object
 
-        <MethodImpl(MethodImplOptions.InternalCall), PreserveSig()> _
-        Function IsAvailableInProject( _
-            <InAttribute(), MarshalAs(UnmanagedType.BStr)> strPermissionSet As String, _
-            <InAttribute(), MarshalAs(UnmanagedType.IUnknown)> ProjectPermissionSet As Object, _
-            <OutAttribute(), MarshalAs(UnmanagedType.Bool)> ByRef isAvailable As Boolean) _
-            As Integer
+        <MethodImpl(MethodImplOptions.InternalCall), PreserveSig>
+        Function IsAvailableInProject(
+            <[In], MarshalAs(UnmanagedType.BStr)> strPermissionSet As String,
+            <[In], MarshalAs(UnmanagedType.IUnknown)> ProjectPermissionSet As Object,
+            <Out, MarshalAs(UnmanagedType.Bool)> ByRef isAvailable As Boolean
+            ) As Integer
 
         ' Returns S_FALSE if there is no tip
-        <MethodImpl(MethodImplOptions.InternalCall), PreserveSig()> _
-        Function GetRequiredPermissionsTip( _
-            <InAttribute(), MarshalAs(UnmanagedType.BStr)> strPermissionSet As String, _
-            <OutAttribute(), MarshalAs(UnmanagedType.BStr)> ByRef strTip As String) _
-            As Integer
+        <MethodImpl(MethodImplOptions.InternalCall), PreserveSig()>
+        Function GetRequiredPermissionsTip(
+            <[In], MarshalAs(UnmanagedType.BStr)> strPermissionSet As String,
+            <Out, MarshalAs(UnmanagedType.BStr)> ByRef strTip As String
+            ) As Integer
 
     End Interface
 

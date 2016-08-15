@@ -3,6 +3,7 @@
 Imports System.Windows.Forms
 
 Namespace Microsoft.VisualStudio.Editors.AddImports
+
     Friend Class AddImportsDialogService
         Implements IVBAddImportsDialogService
 
@@ -15,9 +16,7 @@ Namespace Microsoft.VisualStudio.Editors.AddImports
         ''' <param name="packageServiceProvider"></param>
         ''' <remarks></remarks>
         Friend Sub New(packageServiceProvider As IServiceProvider)
-            If packageServiceProvider Is Nothing Then
-                Throw New ArgumentNullException("packageServiceProvider")
-            End If
+            If packageServiceProvider Is Nothing Then Throw New ArgumentNullException(NameOf(packageServiceProvider))
             _serviceProvider = packageServiceProvider
         End Sub
 
@@ -49,5 +48,7 @@ Namespace Microsoft.VisualStudio.Editors.AddImports
                     Throw New InvalidOperationException("Unexpected Dialog Type")
             End Select
         End Function
+
     End Class
+
 End Namespace

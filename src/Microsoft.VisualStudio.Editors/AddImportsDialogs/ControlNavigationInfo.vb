@@ -3,7 +3,9 @@
 Imports System.Windows.Forms
 
 Namespace Microsoft.VisualStudio.Editors.AddImports
+
     Friend Class ControlNavigationInfo
+
         Public ReadOnly NextControl As Control
         Public ReadOnly PreviousControl As Control
 
@@ -11,5 +13,7 @@ Namespace Microsoft.VisualStudio.Editors.AddImports
             Me.NextControl = NextControl
             Me.PreviousControl = PreviousControl
         End Sub
+
     End Class
+
 End Namespace

@@ -24,9 +24,11 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="VsUIShell">The IVsUIShell interface that must also implement IVsUIShell2 (if not, or if Nothing, default color is returned)</param>
         ''' <param name="VsSysColorIndex">The color index to look up.</param>
         ''' <param name="DefaultColor">The default color to return if the call fails.</param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Public Shared Function GetColor(VsUIShell As IVsUIShell, VsSysColorIndex As __VSSYSCOLOREX, DefaultColor As Color) As Color
+        Public Shared Function GetColor(
+                                         VsUIShell As IVsUIShell,
+                                         VsSysColorIndex As __VSSYSCOLOREX,
+                                         DefaultColor As Color
+                                       ) As Color
             Return GetColor(TryCast(VsUIShell, IVsUIShell2), VsSysColorIndex, DefaultColor)
         End Function
 
@@ -38,15 +40,15 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="VsUIShell2">The IVsUIShell2 interface to use (if Nothing, default color is returned)</param>
         ''' <param name="VsSysColorIndex">The color index to look up.</param>
         ''' <param name="DefaultColor">The default color to return if the call fails.</param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Public Shared Function GetColor(VsUIShell2 As IVsUIShell2, VsSysColorIndex As __VSSYSCOLOREX, DefaultColor As Color) As Color
+        Public Shared Function GetColor(
+                                         VsUIShell2 As IVsUIShell2,
+                                         VsSysColorIndex As __VSSYSCOLOREX,
+                                         DefaultColor As Color
+                                        ) As Color
             If VsUIShell2 IsNot Nothing Then
                 Dim abgrValue As System.UInt32
                 Dim Hr As Integer = VsUIShell2.GetVSSysColorEx(VsSysColorIndex, abgrValue)
-                If VSErrorHandler.Succeeded(Hr) Then
-                    Return COLORREFToColor(abgrValue)
-                End If
+                If VSErrorHandler.Succeeded(Hr) Then Return COLORREFToColor(abgrValue)
             End If
 
             Debug.Fail("Unable to get color from the shell, using a predetermined default color instead." & VB.vbCrLf & "Color Index = " & VsSysColorIndex & ", Default Color = &h" & VB.Hex(DefaultColor.ToArgb))
@@ -54,42 +56,37 @@ Namespace Microsoft.VisualStudio.Editors.Common
         End Function
 
 
-        ''' <summary>
-        ''' Converts a COLORREF value (as UInteger) to System.Drawing.Color
-        ''' </summary>
+        ''' <summary>Converts a COLORREF value (as UInteger) to System.Drawing.Color</summary>
         ''' <param name="abgrValue">The UInteger COLORREF value</param>
         ''' <returns>The System.Drawing.Color equivalent.</returns>
-        ''' <remarks></remarks>
-        Private Shared Function COLORREFToColor(abgrValue As System.UInt32) As Color
+        Private Shared Function COLORREFToColor(
+                                                 abgrValue As System.UInt32
+                                               ) As Color
             Return Color.FromArgb(CInt(abgrValue And &HFFUI), CInt((abgrValue And &HFF00UI) >> 8), CInt((abgrValue And &HFF0000UI) >> 16))
         End Function
 
 
-        ''' <summary>
-        ''' Retrieves the window that should be used as the owner of all dialogs and messageboxes.
-        ''' </summary>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Friend Shared Function GetDialogOwnerWindow(serviceProvider As IServiceProvider) As IWin32Window
+        ''' <summary>Retrieves the window that should be used as the owner of all dialogs and messageboxes.</summary>
+        Friend Shared Function GetDialogOwnerWindow(
+                                                     serviceProvider As IServiceProvider
+                                                   ) As IWin32Window
             Dim dialogOwner As IWin32Window = Nothing
             Dim UIService As IUIService = DirectCast(serviceProvider.GetService(GetType(IUIService)), IUIService)
-            If UIService IsNot Nothing Then
-                dialogOwner = UIService.GetDialogOwnerWindow()
-            End If
-
+            If UIService IsNot Nothing Then dialogOwner = UIService.GetDialogOwnerWindow()
             Debug.Assert(dialogOwner IsNot Nothing, "Couldn't get DialogOwnerWindow")
             Return dialogOwner
         End Function
 
 
-        ''' <summary>
-        ''' Given an IVsCfg, get its configuration and platform names.
-        ''' </summary>
+        ''' <summary> Given an IVsCfg, get its configuration and platform names.</summary>
         ''' <param name="Config">The IVsCfg to get the configuration and platform name from.</param>
         ''' <param name="ConfigName">[out] The configuration name.</param>
         ''' <param name="PlatformName">[out] The platform name.</param>
-        ''' <remarks></remarks>
-        Public Shared Sub GetConfigAndPlatformFromIVsCfg(Config As IVsCfg, ByRef ConfigName As String, ByRef PlatformName As String)
+        Public Shared Sub GetConfigAndPlatformFromIVsCfg(
+                                                          Config As IVsCfg,
+                                                    ByRef ConfigName As String,
+                                                    ByRef PlatformName As String
+                                                        )
             Dim DisplayName As String = Nothing
 
             VSErrorHandler.ThrowOnFailure(Config.get_DisplayName(DisplayName))
@@ -120,7 +117,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' </summary>
         ''' <param name="ProjectHierarchy">The hierarchy to check</param>
         ''' <remarks></remarks>
-        Public Shared Function GetIsSimplifiedConfigMode(ProjectHierarchy As IVsHierarchy) As Boolean
+        Public Shared Function GetIsSimplifiedConfigMode(
+                                                          ProjectHierarchy As IVsHierarchy
+                                                        ) As Boolean
             Try
                 If ProjectHierarchy IsNot Nothing Then
                     Dim Project As Project = DTEProjectFromHierarchy(ProjectHierarchy)
@@ -143,27 +142,29 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' </summary>
         ''' <param name="ProjectHierarchy">The project hierarchy to check</param>
         ''' <remarks></remarks>
-        Private Shared Function CanHideConfigurationsForProject(ProjectHierarchy As IVsHierarchy) As Boolean
-            Dim ReturnValue As Boolean = False 'If failed to get config value, default to not hiding configs
+        Private Shared Function CanHideConfigurationsForProject(
+                                                                 ProjectHierarchy As IVsHierarchy
+                                                               ) As Boolean
 
+            Dim ReturnValue As Boolean = False 'If failed to get config value, default to not hiding configs
             Dim ConfigProviderObject As Object = Nothing
             Dim ConfigProvider As IVsCfgProvider2 = Nothing
+
             If VSErrorHandler.Succeeded(ProjectHierarchy.GetProperty(VSITEMID.ROOT, __VSHPROPID.VSHPROPID_ConfigurationProvider, ConfigProviderObject)) Then
                 ConfigProvider = TryCast(ConfigProviderObject, IVsCfgProvider2)
             End If
 
-            If ConfigProvider IsNot Nothing Then
-                Dim ValueObject As Object = Nothing
+            If ConfigProvider Is Nothing Then Return ReturnValue
+            Dim ValueObject As Object = Nothing
 
-                'Ask the project system if configs can be hidden
-                Dim hr As Integer = ConfigProvider.GetCfgProviderProperty(__VSCFGPROPID2.VSCFGPROPID_HideConfigurations, ValueObject)
+            'Ask the project system if configs can be hidden
+            Dim hr As Integer = ConfigProvider.GetCfgProviderProperty(__VSCFGPROPID2.VSCFGPROPID_HideConfigurations, ValueObject)
 
-                If VSErrorHandler.Succeeded(hr) AndAlso TypeOf ValueObject Is Boolean Then
-                    ReturnValue = CBool(ValueObject)
-                Else
-                    Debug.Fail("Failed to get VSCFGPROPID_HideConfigurations from project config provider")
-                    ReturnValue = False
-                End If
+            If VSErrorHandler.Succeeded(hr) AndAlso TypeOf ValueObject Is Boolean Then
+                ReturnValue = CBool(ValueObject)
+            Else
+                Debug.Fail("Failed to get VSCFGPROPID_HideConfigurations from project config provider")
+                ReturnValue = False
             End If
 
             Return ReturnValue
@@ -174,17 +175,19 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '''   Tools.Options.
         ''' </summary>
         ''' <param name="DTE">The DTE extensibility object</param>
-        ''' <remarks></remarks>
-        Private Shared Function ToolsOptionsShowAdvancedBuildConfigurations(DTE As DTE) As Boolean
+        Private Shared Function ToolsOptionsShowAdvancedBuildConfigurations(
+                                                                             DTE As DTE
+                                                                           ) As Boolean
+
             'Now check for if the Tools option setting to show Advanced Config Settings is on
             Dim ShowAdvancedBuildIntValue As Integer = -1
-
             Dim ShowValue As Boolean
             Dim ProjAndSolutionProperties As EnvDTE.Properties
-            Const EnvironmentCategory As String = "Environment"
-            Const ProjectsAndSolution As String = "ProjectsandSolution"
+            Const EnvironmentCategory = "Environment"
+            Const ProjectsAndSolution = "ProjectsandSolution"
 
             Try
+
                 ProjAndSolutionProperties = DTE.Properties(EnvironmentCategory, ProjectsAndSolution)
                 If ProjAndSolutionProperties IsNot Nothing Then
                     ShowValue = CBool(ProjAndSolutionProperties.Item("ShowAdvancedBuildConfigurations").Value)
@@ -192,6 +195,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                     Debug.Fail("Couldn't get ProjAndSolutionProperties property from DTE.Properties")
                     ShowValue = True 'If can't get to the property, assume advanced mode
                 End If
+
             Catch ex As Exception When Common.ReportWithoutCrash(ex, "Couldn't get ShowAdvancedBuildConfigurations property from tools.options", NameOf(ShellUtil))
                 Return True 'default to showing advanced
             End Try
@@ -205,62 +209,45 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '''   don't support this, returns Nothing (e.g. C++).
         ''' </summary>
         ''' <param name="ProjectHierarchy"></param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Public Shared Function DTEProjectFromHierarchy(ProjectHierarchy As IVsHierarchy) As Project
-            If ProjectHierarchy Is Nothing Then
-                Return Nothing
-            End If
+        Public Shared Function DTEProjectFromHierarchy(
+                                                        ProjectHierarchy As IVsHierarchy
+                                                      ) As Project
 
+            If ProjectHierarchy Is Nothing Then Return Nothing
             Dim hr As Integer
             Dim Obj As Object = Nothing
             hr = ProjectHierarchy.GetProperty(VSITEMID.ROOT, __VSHPROPID.VSHPROPID_ExtObject, Obj)
-            If VSErrorHandler.Succeeded(hr) Then
-                Return TryCast(Obj, EnvDTE.Project)
-            End If
-
+            If VSErrorHandler.Succeeded(hr) Then Return TryCast(Obj, EnvDTE.Project)
             Return Nothing
         End Function
 
 
-        ''' <summary>
-        ''' Given a DTE Project, get the hierarchy corresponding to it.
-        ''' </summary>
+        ''' <summary>Given a DTE Project, get the hierarchy corresponding to it.</summary>
         ''' <param name="sp"></param>
         ''' <param name="project"></param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Public Shared Function VsHierarchyFromDTEProject(sp As IServiceProvider, project As Project) As IVsHierarchy
+        Public Shared Function VsHierarchyFromDTEProject(
+                                                          sp As IServiceProvider,
+                                                          project As Project
+                                                        ) As IVsHierarchy
             Debug.Assert(sp IsNot Nothing)
-            If sp Is Nothing OrElse project Is Nothing Then
-                Return Nothing
-            End If
+            If (sp Is Nothing) OrElse (project Is Nothing) Then Return Nothing
 
             Dim vssolution As IVsSolution = TryCast(sp.GetService(GetType(IVsSolution)), IVsSolution)
-            If vssolution IsNot Nothing Then
-                Dim hierarchy As IVsHierarchy = Nothing
-                If VSErrorHandler.Succeeded(vssolution.GetProjectOfUniqueName(project.UniqueName, hierarchy)) Then
-                    Return hierarchy
-                Else
-                    Debug.Fail("Why didn't we get the hierarchy from the project?")
-                End If
-            End If
-
+            If vssolution Is Nothing Then Return Nothing
+            Dim hierarchy As IVsHierarchy = Nothing
+            If VSErrorHandler.Succeeded(vssolution.GetProjectOfUniqueName(project.UniqueName, hierarchy)) Then Return hierarchy
+            Debug.Fail("Why didn't we get the hierarchy from the project?")
             Return Nothing
         End Function
 
-        ''' <summary>
-        ''' Returns the IVsCfgProvider2 for the given project hierarchy
-        ''' </summary>
+        ''' <summary>Returns the IVsCfgProvider2 for the given project hierarchy.</summary>
         ''' <param name="ProjectHierarchy"></param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Public Shared Function GetConfigProvider(ProjectHierarchy As IVsHierarchy) As IVsCfgProvider2
+        Public Shared Function GetConfigProvider(
+                                                  ProjectHierarchy As IVsHierarchy
+                                                ) As IVsCfgProvider2
             'CONSIDER: This will not work for all project types because they do not support this property.
             Dim ConfigProvider As Object = Nothing
-            If VSErrorHandler.Failed(ProjectHierarchy.GetProperty(VSITEMID.ROOT, __VSHPROPID.VSHPROPID_ConfigurationProvider, ConfigProvider)) Then
-                Return Nothing
-            End If
+            If VSErrorHandler.Failed(ProjectHierarchy.GetProperty(VSITEMID.ROOT, __VSHPROPID.VSHPROPID_ConfigurationProvider, ConfigProvider)) Then Return Nothing
             Return TryCast(ConfigProvider, IVsCfgProvider2)
         End Function
 
@@ -270,7 +257,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="hierarchy"></param>
         ''' <returns></returns>
         ''' <remarks></remarks>
-        Public Shared Function IsDeviceProject(hierarchy As IVsHierarchy) As Boolean
+        Public Shared Function IsDeviceProject(
+                                                hierarchy As IVsHierarchy
+                                              ) As Boolean
             If hierarchy Is Nothing Then
                 Debug.Fail("I can't determine if this is a devices project from a NULL hierarchy!?")
                 Return False
@@ -284,47 +273,40 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Return False
         End Function
 
-        ''' <summary>
-        ''' Is this a Venus project?
-        ''' </summary>
+        ''' <summary>Is this a Venus project?</summary>
         ''' <param name="hierarchy"></param>
         ''' <returns>true if it is a venus project</returns>
-        ''' <remarks></remarks>
-        Friend Shared Function IsVenusProject(hierarchy As IVsHierarchy) As [Boolean]
+        Friend Shared Function IsVenusProject(
+                                               hierarchy As IVsHierarchy
+                                             ) As Boolean
 
-            If hierarchy Is Nothing Then
-                Return False
-            End If
+            If hierarchy Is Nothing Then Return False
 
             Try
                 Dim project As EnvDTE.Project = DTEProjectFromHierarchy(hierarchy)
+                If project Is Nothing Then Return False
 
-                If project Is Nothing Then
-                    Return False
-                End If
+                If String.Equals(project.Kind, VsWebSite.PrjKind.prjKindVenusProject, System.StringComparison.OrdinalIgnoreCase) Then Return True
 
-                If String.Equals(project.Kind, VsWebSite.PrjKind.prjKindVenusProject, System.StringComparison.OrdinalIgnoreCase) Then
-                    Return True
-                End If
             Catch ex As Exception When Utils.ReportWithoutCrash(ex, NameOf(IsVenusProject), NameOf(ShellUtil))
                 ' We failed. Assume that this isn't a web project...
             End Try
             Return False
+
         End Function
 
 
-        ''' <summary>
-        ''' Is this a Silver Light project
-        ''' </summary>
+        ''' <summary>Is this a Silver Light project.</summary>
         ''' <param name="hierarchy"></param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Friend Shared Function IsSilverLightProject(hierarchy As IVsHierarchy) As [Boolean]
-            Const SilverLightProjectGuid As String = "{A1591282-1198-4647-A2B1-27E5FF5F6F3B}"
 
-            If hierarchy Is Nothing Then
-                Return False
-            End If
+        Friend Shared Function IsSilverLightProject(
+                                                     hierarchy As IVsHierarchy
+                                                   ) As Boolean
+
+            If hierarchy Is Nothing Then Return False
+
+            Const SilverLightProjectGuid = "{A1591282-1198-4647-A2B1-27E5FF5F6F3B}"
+
 
             Try
                 ' VS SilverLight Projects are traditional vb/c# apps, but 'flavored' to add functionality
@@ -341,91 +323,83 @@ Namespace Microsoft.VisualStudio.Editors.Common
                     aggregatableProject.GetAggregateProjectTypeGuids(guidStrings)
 
                     For Each guidString As String In guidStrings.Split(New Char() {";"c})
-                        If guidString <> "" Then
-                            ' Insert Guid to the front
-                            Try
-                                Dim flavorGuid As New Guid(guidString)
-                                If SLPGuid.Equals(flavorGuid) Then
-                                    Return True
-                                End If
-                            Catch ex As Exception When Utils.ReportWithoutCrash(ex, $"We received a broken guid string from IVsAggregatableProject '{guidStrings}'", NameOf(ShellUtil))
-                            End Try
-                        End If
+                        If guidString = "" Then Continue For
+                        ' Insert Guid to the front
+                        Try
+                            Dim flavorGuid As New Guid(guidString)
+                            If SLPGuid.Equals(flavorGuid) Then Return True
+
+                        Catch ex As Exception When Utils.ReportWithoutCrash(ex, $"We received a broken guid string from IVsAggregatableProject '{guidStrings}'", NameOf(ShellUtil))
+
+                        End Try
+
                     Next
                 Else
+
                     '  Should not happen, but if they decide to make this project type non-flavored.
                     Dim typeGuid As Guid = Nothing
                     VSErrorHandler.ThrowOnFailure(hierarchy.GetGuidProperty(VSITEMID.ROOT, __VSHPROPID.VSHPROPID_TypeGuid, typeGuid))
-                    If SLPGuid.Equals(typeGuid) Then
-                        Return True
-                    End If
+                    If SLPGuid.Equals(typeGuid) Then Return True
+
                 End If
             Catch ex As Exception When Utils.ReportWithoutCrash(ex, NameOf(IsSilverLightProject), NameOf(ShellUtil))
                 ' We failed. Assume that this isn't a web project...
             End Try
+
             Return False
         End Function
 
-        ''' <summary>
-        ''' Is this a web (Venus WSP or WAP project)
-        ''' </summary>
+        ''' <summary>Is this a web (Venus WSP or WAP project).</summary>
         ''' <param name="hierarchy"></param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Friend Shared Function IsWebProject(hierarchy As IVsHierarchy) As [Boolean]
-            Const WebAppProjectGuid As String = "{349c5851-65df-11da-9384-00065b846f21}"
+        Friend Shared Function IsWebProject(
+                                             hierarchy As IVsHierarchy
+                                           ) As Boolean
 
-            If hierarchy Is Nothing Then
-                Return False
-            End If
+            If hierarchy Is Nothing Then Return False
+            Const WebAppProjectGuid = "{349c5851-65df-11da-9384-00065b846f21}"
+
+
 
             Try
-                If IsVenusProject(hierarchy) Then
-                    Return True
-                End If
+                If IsVenusProject(hierarchy) Then Return True
 
                 ' VS WAP Projects are traditional vb/c# apps, but 'flavored' to add functionality
                 ' for ASP.Net.  This flavoring is marked by adding a guid to the AggregateProjectType guids
                 ' Get the project type guid list
                 Dim guidList As New System.Collections.Generic.List(Of Guid)
-
                 Dim WAPGuid As New Guid(WebAppProjectGuid)
-
                 Dim aggregatableProject As IVsAggregatableProject = TryCast(hierarchy, IVsAggregatableProject)
+
                 If aggregatableProject IsNot Nothing Then
                     Dim guidStrings As String = Nothing
                     '  The project guids string looks like "{Guid 1};{Guid 2};...{Guid n}" with Guid n the inner most
                     aggregatableProject.GetAggregateProjectTypeGuids(guidStrings)
 
                     For Each guidString As String In guidStrings.Split(New Char() {";"c})
-                        If guidString <> "" Then
-                            ' Insert Guid to the front
-                            Try
-                                Dim flavorGuid As New Guid(guidString)
-                                If WAPGuid.Equals(flavorGuid) Then
-                                    Return True
-                                End If
-                            Catch ex As Exception When Utils.ReportWithoutCrash(ex, $"We received a broken guid string from IVsAggregatableProject '{guidStrings}'", NameOf(ShellUtil))
-                            End Try
-                        End If
+                        If guidString = "" Then Continue For
+                        ' Insert Guid to the front
+                        Try
+                            Dim flavorGuid As New Guid(guidString)
+                            If WAPGuid.Equals(flavorGuid) Then Return True
+
+                        Catch ex As Exception When Utils.ReportWithoutCrash(ex, $"We received a broken guid string from IVsAggregatableProject '{guidStrings}'", NameOf(ShellUtil))
+                        End Try
+
                     Next
                 Else
                     '  Should not happen, but if they decide to make this project type non-flavored.
                     Dim typeGuid As Guid = Nothing
                     VSErrorHandler.ThrowOnFailure(hierarchy.GetGuidProperty(VSITEMID.ROOT, __VSHPROPID.VSHPROPID_TypeGuid, typeGuid))
-                    If Guid.Equals(WAPGuid, typeGuid) Then
-                        Return True
-                    End If
+                    If Guid.Equals(WAPGuid, typeGuid) Then Return True
+
                 End If
+
             Catch ex As Exception When Utils.ReportWithoutCrash(ex, NameOf(IsWebProject), NameOf(ShellUtil))
                 ' We failed. Assume that this isn't a web project...
             End Try
             Return False
         End Function
 
-        ''' <summary>
-        ''' 
-        ''' </summary>
         ''' <param name="fileName">IN: name of the file to get the document info from</param>
         ''' <param name="rdt">IN: Running document table to find the info in</param>
         ''' <param name="hierarchy">OUT: Hierarchy that the document was found in</param>
@@ -433,10 +407,18 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="readLocks">OUT: Number of read locks for the document</param>
         ''' <param name="editLocks">OUT: Number of edit locks on the document</param>
         ''' <param name="docCookie">OUT: A cookie for the doc, 0 if the doc isn't found in the RDT</param>
-        ''' <remarks></remarks>
-        Friend Shared Sub GetDocumentInfo(fileName As String, rdt As IVsRunningDocumentTable, ByRef hierarchy As IVsHierarchy, ByRef readLocks As UInteger, ByRef editLocks As UInteger, ByRef itemid As UInteger, ByRef docCookie As UInteger)
-            If fileName Is Nothing Then Throw New ArgumentNullException("fileName")
-            If rdt Is Nothing Then Throw New ArgumentNullException("rdt")
+        Friend Shared Sub GetDocumentInfo(
+                                           fileName As String,
+                                           rdt As IVsRunningDocumentTable,
+                                     ByRef hierarchy As IVsHierarchy,
+                                     ByRef readLocks As UInteger,
+                                     ByRef editLocks As UInteger,
+                                     ByRef itemid As UInteger,
+                                     ByRef docCookie As UInteger
+                                         )
+
+            If fileName Is Nothing Then Throw New ArgumentNullException(NameOf(fileName))
+            If rdt Is Nothing Then Throw New ArgumentNullException(NameOf(rdt))
 
             '
             ' Initialize out parameters...
@@ -493,17 +475,16 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' The list of items that are to be checked out
         ''' </returns>
         ''' <remarks></remarks>
-        Friend Shared Function FileNameAndGeneratedFileName(projectitem As EnvDTE.ProjectItem, _
-                                                            Optional suffix As String = ".Designer", _
-                                                            Optional requireExactlyOneChild As Boolean = True, _
-                                                            Optional exclude As Predicate(Of String) = Nothing) _
-                               As Collections.Generic.List(Of String)
+        Friend Shared Function FileNameAndGeneratedFileName(
+                                                             projectitem As EnvDTE.ProjectItem,
+                                                    Optional suffix As String = ".Designer",
+                                                    Optional requireExactlyOneChild As Boolean = True,
+                                                    Optional exclude As Predicate(Of String) = Nothing
+                                                           ) As Collections.Generic.List(Of String)
 
             Dim result As New List(Of String)
 
-            If projectitem IsNot Nothing AndAlso projectitem.Name <> "" Then
-                result.Add(DTEUtils.FileNameFromProjectItem(projectitem))
-            End If
+            If projectitem IsNot Nothing AndAlso projectitem.Name <> "" Then result.Add(DTEUtils.FileNameFromProjectItem(projectitem))
 
             ' For each child, check if the name matches the filename for the generated file
             If projectitem IsNot Nothing AndAlso projectitem.ProjectItems IsNot Nothing Then
@@ -543,14 +524,14 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '''<summary>
         ''' a fake IVSDProjectProperties definition. We only use this to check whether the project supports this interface, but don't pay attention to the detail.
         '''</summary>
-        <System.Runtime.InteropServices.ComImport(), System.Runtime.InteropServices.ComVisible(False), System.Runtime.InteropServices.Guid("1A27878B-EE15-41CE-B427-58B10390C821"), System.Runtime.InteropServices.InterfaceType(System.Runtime.InteropServices.ComInterfaceType.InterfaceIsDual)> _
+        <System.Runtime.InteropServices.ComImport,
+         System.Runtime.InteropServices.ComVisible(False),
+         System.Runtime.InteropServices.Guid("1A27878B-EE15-41CE-B427-58B10390C821"),
+         System.Runtime.InteropServices.InterfaceType(System.Runtime.InteropServices.ComInterfaceType.InterfaceIsDual)>
         Private Interface IVSDProjectProperties
         End Interface
 
-        ''' <summary>
-        ''' Wrapper class for IVsShell.OnBroadcastMessage
-        ''' </summary>
-        ''' <remarks></remarks>
+        ''' <summary>Wrapper class for IVsShell.OnBroadcastMessage.</summary>
         Friend Class BroadcastMessageEventsHelper
             Implements IVsBroadcastMessageEvents
             Implements IDisposable
@@ -571,9 +552,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
             Friend Sub ConnectBroadcastEvents()
                 Dim VSShell As IVsShell = Nothing
-                If _serviceProvider IsNot Nothing Then
-                    VSShell = DirectCast(_serviceProvider.GetService(GetType(IVsShell)), IVsShell)
-                End If
+                If _serviceProvider IsNot Nothing Then VSShell = DirectCast(_serviceProvider.GetService(GetType(IVsShell)), IVsShell)
                 If VSShell IsNot Nothing Then
                     VSErrorHandler.ThrowOnFailure(VSShell.AdviseBroadcastMessages(Me, _cookieBroadcastMessages))
                 Else
@@ -582,37 +561,29 @@ Namespace Microsoft.VisualStudio.Editors.Common
             End Sub
 
             Private Sub DisconnectBroadcastMessages()
-                If _cookieBroadcastMessages <> 0 Then
-                    Dim VsShell As IVsShell = DirectCast(_serviceProvider.GetService(GetType(IVsShell)), IVsShell)
-                    If VsShell IsNot Nothing Then
-                        VSErrorHandler.ThrowOnFailure(VsShell.UnadviseBroadcastMessages(_cookieBroadcastMessages))
-                        _cookieBroadcastMessages = 0
-                    End If
+                If _cookieBroadcastMessages = 0 Then Exit Sub
+                Dim VsShell As IVsShell = DirectCast(_serviceProvider.GetService(GetType(IVsShell)), IVsShell)
+                If VsShell IsNot Nothing Then
+                    VSErrorHandler.ThrowOnFailure(VsShell.UnadviseBroadcastMessages(_cookieBroadcastMessages))
+                    _cookieBroadcastMessages = 0
                 End If
             End Sub
 
 #End Region
 
-            ''' <summary>
-            ''' Forward to overridable OnBrodcastMessage handler
-            ''' </summary>
-            ''' <param name="msg"></param>
-            ''' <param name="wParam"></param>
-            ''' <param name="lParam"></param>
-            ''' <returns></returns>
-            ''' <remarks></remarks>
+            ''' <summary>Forward to overridable OnBrodcastMessage handler.</summary>
+            ''' <param name="msg"/>
+            ''' <param name="wParam"/>
+            ''' <param name="lParam"/>
             Private Function IVsBroadcastMessageEvents_OnBroadcastMessage(msg As UInteger, wParam As System.IntPtr, lParam As System.IntPtr) As Integer Implements Shell.Interop.IVsBroadcastMessageEvents.OnBroadcastMessage
                 OnBroadcastMessage(msg, wParam, lParam)
                 Return Interop.NativeMethods.S_OK
             End Function
 
-            ''' <summary>
-            ''' Raise OnBroadcastMessage event. Can be overridden to implement custom handling of broadcast messages
-            ''' </summary>
-            ''' <param name="msg"></param>
-            ''' <param name="wParam"></param>
-            ''' <param name="lParam"></param>
-            ''' <remarks></remarks>
+            ''' <summary> Raise OnBroadcastMessage event. Can be overridden to implement custom handling of broadcast messages.</summary>
+            ''' <param name="msg"/>
+            ''' <param name="wParam"/>
+            ''' <param name="lParam"/>
             Protected Overridable Sub OnBroadcastMessage(msg As UInteger, wParam As System.IntPtr, lParam As System.IntPtr)
                 RaiseEvent BroadcastMessage(msg, wParam, lParam)
             End Sub
@@ -623,11 +594,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
             ' IDisposable
             Private Overloads Sub Dispose(disposing As Boolean)
-                If Not Me._disposed Then
-                    If disposing Then
-                        DisconnectBroadcastMessages()
-                    End If
-                End If
+                If Not Me._disposed AndAlso disposing Then DisconnectBroadcastMessages()
                 Me._disposed = True
             End Sub
 
@@ -651,10 +618,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
         End Class
 
-        ''' <summary>
-        ''' Monitor and set font when font changes...
-        ''' </summary>
-        ''' <remarks></remarks>
+        ''' <summary>Monitor and set font when font changes... </summary>
         Friend NotInheritable Class FontChangeMonitor
             Inherits BroadcastMessageEventsHelper
 
@@ -663,15 +627,17 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
             Private _serviceProvider As IServiceProvider
 
-            ''' <summary>
-            ''' Create a new instance...
-            ''' </summary>
-            ''' <param name="sp"></param>
-            ''' <param name="ctrl"></param>
+            ''' <summary> Create a new instance... </summary>
+            ''' <param name="sp"/>
+            ''' <param name="ctrl"/>
             ''' <param name="SetFontInitially">If true, set the font of the provided control when this FontChangeMonitor is created</param>
-            ''' <remarks></remarks>
-            Public Sub New(sp As IServiceProvider, ctrl As System.Windows.Forms.Control, SetFontInitially As Boolean)
-                MyBase.new(sp)
+            Public Sub New(
+                            sp As IServiceProvider,
+                            ctrl As System.Windows.Forms.Control,
+                            SetFontInitially As Boolean
+                          )
+
+                MyBase.New(sp)
 
                 Debug.Assert(sp IsNot Nothing, "Why did we get a NULL service provider!?")
                 Debug.Assert(ctrl IsNot Nothing, "Why didn't we get a control to provide the dialog font for!?")
@@ -679,44 +645,31 @@ Namespace Microsoft.VisualStudio.Editors.Common
                 _serviceProvider = sp
                 _control = ctrl
 
-                If SetFontInitially Then
-                    _control.Font = GetDialogFont(sp)
-                End If
+                If SetFontInitially Then _control.Font = GetDialogFont(sp)
+
             End Sub
 
-            ''' <summary>
-            ''' Override to get WM_SETTINGCHANGE notifications and set the font accordingly...
-            ''' </summary>
-            ''' <param name="msg"></param>
-            ''' <param name="wParam"></param>
-            ''' <param name="lParam"></param>
-            ''' <remarks></remarks>
+            ''' <summary> Override to get WM_SETTINGCHANGE notifications and set the font accordingly... </summary>
+            ''' <param name="msg"/>
+            ''' <param name="wParam"/>
+            ''' <param name="lParam"/>
             Protected Overrides Sub OnBroadcastMessage(msg As UInteger, wParam As System.IntPtr, lParam As System.IntPtr)
                 MyBase.OnBroadcastMessage(msg, wParam, lParam)
 
-                If _control IsNot Nothing Then
-                    If msg = Interop.win.WM_SETTINGCHANGE Then
-                        ' Only set font if it is different from the current font...
-                        Dim newFont As Font = GetDialogFont(_serviceProvider)
-                        If Not newFont.Equals(_control.Font) Then
-                            _control.Font = newFont
-                        End If
-                    End If
-                End If
+                If _control Is Nothing Then Exit Sub
+                If msg <> Interop.win.WM_SETTINGCHANGE Then Exit Sub
+                ' Only set font if it is different from the current font...
+                Dim newFont As Font = GetDialogFont(_serviceProvider)
+                If Not newFont.Equals(_control.Font) Then _control.Font = newFont
+
             End Sub
 
-            ''' <summary>
-            ''' Pick current dialog font...
-            ''' </summary>
-            ''' <value></value>
-            ''' <remarks></remarks>
+            ''' <summary> Pick current dialog font... </summary>
             Friend Shared ReadOnly Property GetDialogFont(ServiceProvider As IServiceProvider) As Font
                 Get
                     If ServiceProvider IsNot Nothing Then
                         Dim uiSvc As System.Windows.Forms.Design.IUIService = CType(ServiceProvider.GetService(GetType(System.Windows.Forms.Design.IUIService)), System.Windows.Forms.Design.IUIService)
-                        If uiSvc IsNot Nothing Then
-                            Return CType(uiSvc.Styles("DialogFont"), Font)
-                        End If
+                        If uiSvc IsNot Nothing Then Return CType(uiSvc.Styles("DialogFont"), Font)
                     End If
 
                     Debug.Fail("Couldn't get a IUIService... cheating instead :)")
@@ -727,13 +680,10 @@ Namespace Microsoft.VisualStudio.Editors.Common
         End Class
 
 
-        ''' <summary>
-        ''' Determine if the specified custom tool is registered for the current project system
-        ''' </summary>
+        ''' <summary> Determine if the specified custom tool is registered for the current project system. </summary>
         ''' <param name="hierarchy">Hierarchy to check if the custom tool is registered for</param>
         ''' <param name="customToolName">Name of custom tool to look for</param>
         ''' <returns>True if registered, false otherwise</returns>
-        ''' <remarks></remarks>
         Friend Shared Function IsCustomToolRegistered(hierarchy As IVsHierarchy, customToolName As String) As Boolean
             If hierarchy Is Nothing Then Throw New ArgumentNullException("hierarchy")
             If customToolName Is Nothing Then Throw New ArgumentNullException("customToolName")
@@ -755,48 +705,35 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
             Dim hr As Integer = sfgFactory.GetGeneratorInformation(customToolName, pbGeneratesDesignTimeSource, pbGeneratesSharedDesignTimeSource, pbUseTempPEFlag, pguidGenerator)
 
-            If VSErrorHandler.Succeeded(hr) Then
-                Return True
-            Else
-                Return False
-            End If
+            Return VSErrorHandler.Succeeded(hr)
         End Function
 
 
-        ''' <summary>
-        ''' Check if there's WCF import/generation error/warning. If there's one, force to display the error list page
-        ''' </summary>
+        ''' <summary> Check if there's WCF import/generation error/warning. If there's one, force to display the error list page. </summary>
         ''' <param name="serviceProvider"></param>
         ''' <param name="proxyGenerationErrors"></param>
         ''' <returns>If serviceProvider, (Import)proxyGenerationErrors or no error, return S_OK,
         '''  else, return the result from IVsErrorList.BringToFront() </returns>
-        ''' <remarks></remarks>
-        Public Shared Function CheckAndDisplayWcfErrorList(serviceProvider As IServiceProvider, _
-                                                           proxyGenerationErrors As IEnumerable(Of Microsoft.VSDesigner.WCFModel.ProxyGenerationError), _
-                                                           importErrors As IEnumerable(Of Microsoft.VSDesigner.WCFModel.ProxyGenerationError)) As Integer
+        Public Shared Function CheckAndDisplayWcfErrorList(
+                                                            serviceProvider As IServiceProvider,
+                                                            proxyGenerationErrors As IEnumerable(Of Microsoft.VSDesigner.WCFModel.ProxyGenerationError),
+                                                            importErrors As IEnumerable(Of Microsoft.VSDesigner.WCFModel.ProxyGenerationError)
+                                                          ) As Integer
 
-            If serviceProvider Is Nothing Then
-                Return VSConstants.S_OK
-            End If
+            If serviceProvider Is Nothing Then Return VSConstants.S_OK
 
             Dim totalNumOfErrors As Integer = 0
 
-            If proxyGenerationErrors IsNot Nothing Then
-                totalNumOfErrors = totalNumOfErrors + proxyGenerationErrors.Count()
-            End If
+            If proxyGenerationErrors IsNot Nothing Then totalNumOfErrors += proxyGenerationErrors.Count()
 
-            If importErrors IsNot Nothing Then
-                totalNumOfErrors = totalNumOfErrors + importErrors.Count()
-            End If
+            If importErrors IsNot Nothing Then totalNumOfErrors += importErrors.Count()
 
             Dim vsErrorList As Microsoft.VisualStudio.Shell.Interop.IVsErrorList
             Dim result As Integer = VSConstants.S_OK
             ' Get the service for Error List tab window
             vsErrorList = CType(serviceProvider.GetService(GetType(Microsoft.VisualStudio.Shell.Interop.SVsErrorList)), Microsoft.VisualStudio.Shell.Interop.IVsErrorList)
 
-            If vsErrorList IsNot Nothing AndAlso totalNumOfErrors > 0 Then
-                result = vsErrorList.BringToFront()
-            End If
+            If vsErrorList IsNot Nothing AndAlso totalNumOfErrors > 0 Then result = vsErrorList.BringToFront()
 
             Return result
         End Function
@@ -810,41 +747,32 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' C# does not support default namespace rename.  this flag will tell the caller if
         ''' this is a default renamespace rename or not.
         ''' </summary>
-        ''' <param name="pHier"></param>
-        ''' <param name="itemId"></param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Public Shared Function IsDefaultNamespaceRename(pHier As IVsHierarchy, itemId As UInteger) As Boolean
+        ''' <param name="pHier"/>
+        ''' <param name="itemId"/>
+        Public Shared Function IsDefaultNamespaceRename(
+                                                         pHier As IVsHierarchy,
+                                                         itemId As UInteger
+                                                       ) As Boolean
             ' result <<== out
             Dim result As Object = Nothing
             Dim success As Boolean = VSErrorHandler.Succeeded(pHier.GetProperty(itemId, CType(__VSHPROPID3.VSHPROPID_IsDefaultNamespaceRefactorNotify, Integer), result))
 
-            If Not success OrElse result Is Nothing Then
-                Return False
-            End If
-
+            If Not success OrElse result Is Nothing Then Return False
             Return CType(result, Boolean)
         End Function
 
-        ''' <summary>
-        ''' Create a Type Resolution Service.
-        ''' </summary>
-        ''' <param name="serviceProvider"></param>
-        ''' <param name="hierarchy"></param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Friend Shared Function CreateTypeResolutionService(serviceProvider As IServiceProvider, hierarchy As IVsHierarchy) As System.ComponentModel.Design.ITypeResolutionService
-            Dim dynamicTypeService As Microsoft.VisualStudio.Shell.Design.DynamicTypeService = _
-                    TryCast(serviceProvider.GetService( _
-                    GetType(Microsoft.VisualStudio.Shell.Design.DynamicTypeService)), _
-                    Microsoft.VisualStudio.Shell.Design.DynamicTypeService)
+        ''' <summary> Create a Type Resolution Service. </summary>
+        ''' <param name="serviceProvider"/>
+        ''' <param name="hierarchy"/>
+        Friend Shared Function CreateTypeResolutionService(
+                                                            serviceProvider As IServiceProvider,
+                                                            hierarchy As IVsHierarchy
+                                                          ) As System.ComponentModel.Design.ITypeResolutionService
 
+            Dim dynamicTypeService = TryCast(serviceProvider.GetService(GetType(Microsoft.VisualStudio.Shell.Design.DynamicTypeService)),
+                                                                         Microsoft.VisualStudio.Shell.Design.DynamicTypeService)
             Dim trs As System.ComponentModel.Design.ITypeResolutionService = Nothing
-
-            If dynamicTypeService IsNot Nothing Then
-                trs = dynamicTypeService.GetTypeResolutionService(hierarchy, VSITEMID.ROOT)
-            End If
-
+            If dynamicTypeService IsNot Nothing Then trs = dynamicTypeService.GetTypeResolutionService(hierarchy, VSITEMID.ROOT)
             Return trs
         End Function
 
@@ -852,15 +780,16 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' Gets VS color from the shell's color service.  If for some reason this fails or <paramref name="UseVSTheme"/> is False, returns the supplied
         ''' default color.
         ''' </summary>
-        ''' <param name="VsSysColorIndex"></param>
-        ''' <param name="DefaultColor"></param>
+        ''' <param name="VsSysColorIndex"/>
+        ''' <param name="DefaultColor"/>
         ''' <param name="UseVSTheme">Whether to use VS Shell to map the right color or just use the default one.</param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
-        Public Shared Function GetVSColor(VsSysColorIndex As __VSSYSCOLOREX3, DefaultColor As Color, Optional UseVSTheme As Boolean = True) As Color
-            If Not UseVSTheme Then
-                Return DefaultColor
-            End If
+        Public Shared Function GetVSColor(
+                                           VsSysColorIndex As __VSSYSCOLOREX3,
+                                           DefaultColor As Color,
+                                  Optional UseVSTheme As Boolean = True
+                                         ) As Color
+
+            If Not UseVSTheme Then Return DefaultColor
             ' VBPackage.Instance cannot be Nothing
             Dim VsUIShell2 As IVsUIShell2 = DirectCast(Microsoft.VisualStudio.Shell.Package.GetGlobalService(GetType(SVsUIShell)), IVsUIShell2)
 

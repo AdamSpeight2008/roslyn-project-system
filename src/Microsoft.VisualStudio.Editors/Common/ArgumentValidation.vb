@@ -11,9 +11,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="parameter"></param>
         ''' <remarks></remarks>
         Public Sub ValidateArgumentNotNothing(argument As Object, parameter As String)
-            If argument Is Nothing Then
-                Throw New ArgumentNullException(parameter)
-            End If
+            If argument Is Nothing Then Throw New ArgumentNullException(parameter)
         End Sub
 
         ''' <summary>
@@ -23,9 +21,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <param name="parameter"></param>
         ''' <remarks></remarks>
         Public Sub ValidateArgumentNotNothingOrEmptyString(argument As String, parameter As String)
-            If argument Is Nothing OrElse argument.Length = 0 Then
-                Throw CreateArgumentException(parameter)
-            End If
+            If argument Is Nothing OrElse argument.Length = 0 Then Throw CreateArgumentException(parameter)
         End Sub
 
 
@@ -38,5 +34,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         Public Function CreateArgumentException(argumentName As String) As Exception
             Return New ArgumentException(String.Format(My.Resources.Designer.General_InvalidArgument_1Arg, argumentName))
         End Function
+
     End Module
+
 End Namespace

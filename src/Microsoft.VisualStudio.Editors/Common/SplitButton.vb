@@ -44,11 +44,10 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Dim singlePixelWidth = DpiHelper.LogicalToDeviceUnitsX(1)
             Dim dividerLineVerticalPadding = DpiHelper.LogicalToDeviceUnitsY(4)
 
-            _dropDownRectangle = New Rectangle(
-                x:=bounds.Right - _pushButtonWidth - singlePixelWidth,
-                y:=dividerLineVerticalPadding,
-                width:=_pushButtonWidth,
-                height:=bounds.Height - (dividerLineVerticalPadding * 2))
+            _dropDownRectangle = New Rectangle(x:=bounds.Right - _pushButtonWidth - singlePixelWidth,
+                                                y:=dividerLineVerticalPadding,
+                                                width:=_pushButtonWidth,
+                                                height:=bounds.Height - (dividerLineVerticalPadding * 2))
 
             ' Draw divider line
             If RightToLeft.Equals(RightToLeft.Yes) Then
@@ -115,15 +114,11 @@ Namespace Microsoft.VisualStudio.Editors.Common
         End Sub
 
         Protected Overrides Sub OnKeyDown(kevent As KeyEventArgs)
-            If kevent.KeyCode.Equals(Keys.Down) Then
-                ShowContextMenuOrContextMenuStrip()
-            End If
+            If kevent.KeyCode.Equals(Keys.Down) Then ShowContextMenuOrContextMenuStrip()
         End Sub
 
         Protected Overrides Function IsInputKey(keyData As Keys) As Boolean
-            If keyData.Equals(Keys.Down) Then
-                Return True
-            End If
+            If keyData.Equals(Keys.Down) Then Return True
             Return MyBase.IsInputKey(keyData)
         End Function
 
@@ -133,21 +128,15 @@ Namespace Microsoft.VisualStudio.Editors.Common
         End Sub
 
         Protected Overrides Sub OnGotFocus(e As EventArgs)
-            If Not State.Equals(PushButtonState.Pressed) AndAlso Not State.Equals(PushButtonState.Disabled) Then
-                State = PushButtonState.Default
-            End If
+            If Not State.Equals(PushButtonState.Pressed) AndAlso Not State.Equals(PushButtonState.Disabled) Then State = PushButtonState.Default
         End Sub
 
         Protected Overrides Sub OnLostFocus(e As EventArgs)
-            If Not State.Equals(PushButtonState.Pressed) AndAlso Not State.Equals(PushButtonState.Disabled) Then
-                State = PushButtonState.Normal
-            End If
+            If Not State.Equals(PushButtonState.Pressed) AndAlso Not State.Equals(PushButtonState.Disabled) Then State = PushButtonState.Normal
         End Sub
 
         Protected Overrides Sub OnMouseEnter(e As EventArgs)
-            If Not State.Equals(PushButtonState.Pressed) AndAlso Not State.Equals(PushButtonState.Disabled) Then
-                State = PushButtonState.Hot
-            End If
+            If Not State.Equals(PushButtonState.Pressed) AndAlso Not State.Equals(PushButtonState.Disabled) Then State = PushButtonState.Hot
         End Sub
 
         Protected Overrides Sub OnMouseLeave(e As EventArgs)
@@ -179,10 +168,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         End Sub
 
         Protected Overrides Sub OnMouseUp(mevent As MouseEventArgs)
-            If _showCustomContextMenuWasHandled Then
-                Return
-            End If
-
+            If _showCustomContextMenuWasHandled Then Return
             If Me.ContextMenuStrip Is Nothing OrElse Not Me.ContextMenuStrip.Visible Then
                 SetButtonDrawState()
                 If Me.Bounds.Contains(Me.Parent.PointToClient(Cursor.Position)) And Not (_dropDownRectangle.Contains(mevent.Location) AndAlso Me.ContextMenuStrip IsNot Nothing) Then
@@ -253,17 +239,11 @@ Namespace Microsoft.VisualStudio.Editors.Common
             Dim topOffset = DpiHelper.LogicalToDeviceUnitsY(1)
             Dim bottomOffset = DpiHelper.LogicalToDeviceUnitsY(2)
 
-            Dim arrow = New Point(2) {
-                New Point(
-                    x:=middle.X - leftOffset,
-                    y:=middle.Y - topOffset),
-                New Point(
-                    x:=middle.X + rightOffset,
-                    y:=middle.Y - topOffset),
-                New Point(
-                    x:=middle.X,
-                    y:=middle.Y + bottomOffset)
-            }
+            Dim arrow = {
+                         New Point(middle.X - leftOffset, middle.Y - topOffset),
+                         New Point(middle.X + rightOffset, middle.Y - topOffset),
+                         New Point(middle.X, middle.Y + bottomOffset)
+                        }
 
             g.FillPolygon(SystemBrushes.ControlText, arrow)
         End Sub

@@ -26,9 +26,6 @@ Namespace Microsoft.VisualStudio.Editors.Common
         Private _projectBuildSystem As IVsProjectBuildSystem
         Private _batchCount As Integer
 
-
-        ''' <summary>
-        ''' </summary>
         ''' <param name="projectHierarchy"> The VS project object</param>
         ''' <param name="startBatch">If true, we start a batch process immediately</param>
         Friend Sub New(projectHierarchy As IVsHierarchy, Optional startBatch As Boolean = True)
@@ -40,9 +37,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         End Sub
 
 
-        ''' <summary>
-        ''' Disposes the object, and end the batch process if necessary
-        ''' </summary>
+        ''' <summary>Disposes the object, and end the batch process if necessary.</summary>
         Friend Sub Dispose() Implements IDisposable.Dispose
             If _batchCount > 0 AndAlso _projectBuildSystem IsNot Nothing Then
                 _projectBuildSystem.EndBatchEdit()
@@ -50,11 +45,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
             End If
         End Sub
 
-        ''' <summary>
-        ''' Start a batch edit
-        ''' </summary>
+        ''' <summary>Start a batch edit.</summary>
         Friend Sub StartBatch()
-            Debug.Assert(_batchCount >= 0, "We should never call EndBatch more than StartBatch.")
+            Debug.Assert(_batchCount >= 0, "We should never call " & NameOf(EndBatch) & " more than " & NameOf(StartBatch) & ".")
             If _batchCount = 0 AndAlso _projectBuildSystem IsNot Nothing Then
                 _projectBuildSystem.StartBatchEdit()
                 _batchCount = 1
@@ -63,9 +56,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
             End If
         End Sub
 
-        ''' <summary>
-        ''' End a batch edit
-        ''' </summary>
+        ''' <summary>End a batch edit.</summary>
         Friend Sub EndBatch()
             If _batchCount > 0 Then
                 If _batchCount = 1 AndAlso _projectBuildSystem IsNot Nothing Then
@@ -75,7 +66,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
                     _batchCount = _batchCount - 1
                 End If
             Else
-                Debug.Fail("We should never call EndBatch more than StartBatch.")
+                Debug.Fail("We should never call " & NameOf(EndBatch) & " more than " & NameOf(StartBatch) & ".")
             End If
         End Sub
 

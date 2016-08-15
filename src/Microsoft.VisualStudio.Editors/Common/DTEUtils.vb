@@ -15,11 +15,11 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
 
         'The relevant project property names
-        Public Const PROJECTPROPERTY_CUSTOMTOOL As String = "CustomTool"
-        Public Const PROJECTPROPERTY_CUSTOMTOOLNAMESPACE As String = "CustomToolNamespace"
+        Public Const PROJECTPROPERTY_CUSTOMTOOL = "CustomTool"
+        Public Const PROJECTPROPERTY_CUSTOMTOOLNAMESPACE = "CustomToolNamespace"
 
-        Private Const s_PROJECTPROPERTY_MSBUILD_ITEMTYPE As String = "ItemType"
-        Private Const s_PROJECTPROPERTY_BUILDACTION As String = "BuildAction"
+        Private Const s_PROJECTPROPERTY_MSBUILD_ITEMTYPE = "ItemType"
+        Private Const s_PROJECTPROPERTY_BUILDACTION = "BuildAction"
 
         ''' <summary>
         ''' This is a shared class - disallow instantation.
@@ -83,14 +83,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
 
             Dim SolutionService As IVsSolution = TryCast(VBPackage.GetGlobalService(GetType(IVsSolution)), IVsSolution)
 
-            If SolutionService IsNot Nothing Then
-                Dim Hierarchy As IVsHierarchy = Nothing
-
-                If VSErrorHandler.Succeeded(SolutionService.GetProjectOfUniqueName(ProjectUniqueName, Hierarchy)) Then
-                    Return DTEUtils.EnvDTEProject(Hierarchy)
-                End If
-            End If
-
+            If SolutionService Is Nothing Then Return Nothing
+            Dim Hierarchy As IVsHierarchy = Nothing
+            If VSErrorHandler.Succeeded(SolutionService.GetProjectOfUniqueName(ProjectUniqueName, Hierarchy)) Then Return DTEUtils.EnvDTEProject(Hierarchy)
             Return Nothing
         End Function
 
@@ -120,13 +115,10 @@ Namespace Microsoft.VisualStudio.Editors.Common
         Public Shared Function FindAllFilesWithExtension(ProjectItems As ProjectItems, Extension As String, SearchChildren As Boolean) As List(Of ProjectItem)
             Dim ResXFiles As New List(Of ProjectItem)
             For Each Item As ProjectItem In ProjectItems
-                If IO.Path.GetExtension(Item.FileNames(1)).Equals(Extension, StringComparison.OrdinalIgnoreCase) Then
-                    ResXFiles.Add(Item)
-                End If
 
-                If SearchChildren AndAlso Item.ProjectItems.Count > 0 Then
-                    ResXFiles.AddRange(FindAllFilesWithExtension(Item.ProjectItems, Extension, SearchChildren))
-                End If
+                If IO.Path.GetExtension(Item.FileNames(1)).Equals(Extension, StringComparison.OrdinalIgnoreCase) Then ResXFiles.Add(Item)
+                If SearchChildren AndAlso Item.ProjectItems.Count > 0 Then ResXFiles.AddRange(FindAllFilesWithExtension(Item.ProjectItems, Extension, SearchChildren))
+
             Next
 
             Return ResXFiles
@@ -162,48 +154,28 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <returns></returns>
         ''' <remarks></remarks>
         Public Shared Function GetProjectItemProperty(ProjectItem As ProjectItem, PropertyName As String) As [Property]
-            If ProjectItem.Properties Is Nothing Then
-                Return Nothing
-            End If
-
+            If ProjectItem.Properties Is Nothing Then Return Nothing
             For Each Prop As [Property] In ProjectItem.Properties
-                If Prop.Name.Equals(PropertyName, StringComparison.OrdinalIgnoreCase) Then
-                    Return Prop
-                End If
+                If Prop.Name.Equals(PropertyName, StringComparison.OrdinalIgnoreCase) Then Return Prop
             Next
-
             Return Nothing
         End Function
 
 
-        ''' <summary>
-        ''' Retrieves the given project's property, if it exists, else Nothing
-        ''' </summary>
+        ''' <summary>Retrieves the given project's property, if it exists, else Nothing.</summary>
         ''' <param name="PropertyName">The name of the property to retrieve.</param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
         Public Shared Function GetProjectProperty(Project As Project, PropertyName As String) As [Property]
-            If Project.Properties Is Nothing Then
-                Return Nothing
-            End If
-
+            If Project.Properties Is Nothing Then Return Nothing
             For Each Prop As [Property] In Project.Properties
-                If Prop.Name.Equals(PropertyName, StringComparison.OrdinalIgnoreCase) Then
-                    Return Prop
-                End If
+                If Prop.Name.Equals(PropertyName, StringComparison.OrdinalIgnoreCase) Then Return Prop
             Next
-
             Return Nothing
         End Function
 
 
-        ''' <summary>
-        ''' Given a DTE project, returns the active IVsCfg configuration for it
-        ''' </summary>
+        ''' <summary>Given a DTE project, returns the active IVsCfg configuration for it.</summary>
         ''' <param name="Project">The DTE project</param>
         ''' <param name="VsCfgProvider">The IVsCfgProvider2 interface instance to look up the active configuration from</param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
         Public Shared Function GetActiveConfiguration(Project As Project, VsCfgProvider As IVsCfgProvider2) As IVsCfg
             Dim VsCfg As IVsCfg = Nothing
             With GetActiveDTEConfiguration(Project)
@@ -213,12 +185,8 @@ Namespace Microsoft.VisualStudio.Editors.Common
         End Function
 
 
-        ''' <summary>
-        ''' Given a DTE project, returns the active DTE configuration object for it
-        ''' </summary>
+        ''' <summary>Given a DTE project, returns the active DTE configuration object for it.</summary>
         ''' <param name="Project">The DTE project</param>
-        ''' <returns></returns>
-        ''' <remarks></remarks>
         Public Shared Function GetActiveDTEConfiguration(Project As Project) As EnvDTE.Configuration
             Try
                 Return Project.ConfigurationManager.ActiveConfiguration
@@ -237,7 +205,6 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '''   If this project system doesn't have that property, this call is a NOP.
         ''' </summary>
         ''' <param name="Item">The ProjectItem on which to set the property</param>
-        ''' <remarks></remarks>
         Public Shared Sub SetBuildAction(Item As ProjectItem, BuildAction As VSLangProj.prjBuildAction)
             Dim BuildActionProperty As [Property] = GetProjectItemProperty(Item, s_PROJECTPROPERTY_BUILDACTION)
             If BuildActionProperty IsNot Nothing Then
@@ -250,13 +217,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
         '''   If this project system doesn't have that property, returns prjBuildActionNone.
         ''' </summary>
         ''' <param name="Item">The ProjectItem on which to set the property</param>
-        ''' <remarks></remarks>
         Public Shared Function GetBuildAction(Item As ProjectItem) As VSLangProj.prjBuildAction
             Dim BuildActionProperty As [Property] = GetProjectItemProperty(Item, s_PROJECTPROPERTY_BUILDACTION)
-            If BuildActionProperty IsNot Nothing Then
-                Return CType(BuildActionProperty.Value, VSLangProj.prjBuildAction)
-            End If
-
+            If BuildActionProperty IsNot Nothing Then Return CType(BuildActionProperty.Value, VSLangProj.prjBuildAction)
             Return VSLangProj.prjBuildAction.prjBuildActionNone
         End Function
 
@@ -272,9 +235,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
         Public Shared Sub SetBuildActionAsString(item As ProjectItem, buildAction As String)
 
             Dim BuildActionProperty As [Property] = GetProjectItemProperty(item, s_PROJECTPROPERTY_MSBUILD_ITEMTYPE)
-            If BuildActionProperty IsNot Nothing Then
-                BuildActionProperty.Value = buildAction
-            End If
+            If BuildActionProperty IsNot Nothing Then BuildActionProperty.Value = buildAction
         End Sub
 
         ''' <summary>
@@ -285,11 +246,9 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' <remarks></remarks>
         Public Shared Function GetBuildActionAsString(Item As ProjectItem) As String
             Dim BuildActionProperty As [Property] = GetProjectItemProperty(Item, s_PROJECTPROPERTY_MSBUILD_ITEMTYPE)
-            If BuildActionProperty IsNot Nothing Then
-                Return CType(BuildActionProperty.Value, String)
-            End If
+            If BuildActionProperty Is Nothing Then Return String.Empty
+            Return CType(BuildActionProperty.Value, String)
 
-            Return String.Empty
         End Function
 
         ''' ;FindProjectItem
@@ -299,14 +258,10 @@ Namespace Microsoft.VisualStudio.Editors.Common
         ''' </summary>
         Public Shared Function FindProjectItem(projectItems As ProjectItems, fileName As String) As ProjectItem
             For Each projectItem As ProjectItem In projectItems
-                If projectItem.Kind.Equals( _
-                    EnvDTE.Constants.vsProjectItemKindPhysicalFile, StringComparison.OrdinalIgnoreCase) AndAlso _
-                    projectItem.FileCount > 0 Then
-
+                If projectItem.Kind.Equals(
+                    EnvDTE.Constants.vsProjectItemKindPhysicalFile, StringComparison.OrdinalIgnoreCase) AndAlso projectItem.FileCount > 0 Then
                     Dim itemFileName As String = Path.GetFileName(projectItem.FileNames(1))
-                    If String.Compare(fileName, itemFileName, StringComparison.OrdinalIgnoreCase) = 0 Then
-                        Return projectItem
-                    End If
+                    If String.Compare(fileName, itemFileName, StringComparison.OrdinalIgnoreCase) = 0 Then Return projectItem
                 End If
             Next
 
