@@ -119,10 +119,10 @@ Namespace Microsoft.Internal.Performance
 
         ' Implements sending the code marker value nTimerID.
         ' Implements sending the code marker value nTimerID.
-        Public Sub CodeMarker(nTimerID As Integer)
-            If Not _fUseCodeMarkers Then
-                Return
-            End If
+        Public Sub CodeMarker(
+                               nTimerID As Integer
+                             )
+            If Not _fUseCodeMarkers Then Return
             Try
                 If ShouldUseTestDll Then
                     NativeMethods.TestDllPerfCodeMarker(nTimerID, 0, 0)
@@ -137,7 +137,9 @@ Namespace Microsoft.Internal.Performance
         End Sub 'CodeMarker
 
         ' Checks the registry to see if code markers are enabled
-        Private Shared Function UsePrivateCodeMarkers(strRegRoot As String) As Boolean
+        Private Shared Function UsePrivateCodeMarkers(
+                                                       strRegRoot As String
+                                                     ) As Boolean
 
             ' SECURITY: We no longer check HKCU because that might lead to a DLL spoofing attack via
             ' the code markers DLL. Check only HKLM since that has a strong ACL. You therefore need
@@ -149,10 +151,11 @@ Namespace Microsoft.Internal.Performance
 
         ' Reads the Performance subkey from the appropriate registry key
         ' Returns: the Default value from the subkey (null if not found)
-        Private Shared Function GetPerformanceSubKey(hKey As RegistryKey, strRegRoot As String) As String
-            If hKey Is Nothing Then
-                Return Nothing
-            End If
+        Private Shared Function GetPerformanceSubKey(
+                                                      hKey As RegistryKey,
+                                                      strRegRoot As String
+                                                    ) As String
+            If hKey Is Nothing Then Return Nothing
 
             ' does the subkey exist
             Dim str As String = Nothing
@@ -231,7 +234,10 @@ Namespace Microsoft.Internal.Performance
 
         Private ReadOnly _endCodeMarker As Integer
 
-        Public Sub New(startCodeMarker As Integer, endCodeMarker As Integer)
+        Public Sub New(
+                        startCodeMarker As Integer,
+                        endCodeMarker As Integer
+                      )
             Debug.Assert(endCodeMarker <> 0)
             CodeMarkers.Instance.CodeMarker(startCodeMarker)
             _endCodeMarker = endCodeMarker

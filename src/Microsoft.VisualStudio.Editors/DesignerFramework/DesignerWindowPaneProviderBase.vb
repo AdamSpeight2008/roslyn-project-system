@@ -20,7 +20,6 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
     '''   create a DesignerWindowPaneBase
     ''' This allows us to have more control of the WindowPane
     ''' </summary>
-    ''' <remarks></remarks>
     Friend Class DeferrableWindowPaneProviderServiceBase
         Inherits WindowPaneProviderService
 
@@ -28,18 +27,20 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
         Private _supportToolbox As Boolean
 
 
-        ''' <summary>
-        ''' Constructor
-        ''' </summary>
-        ''' <param name="provider"></param>
-        ''' <param name="SupportToolbox"></param>
-        ''' <remarks></remarks>
-        Friend Sub New(provider As IServiceProvider, SupportToolbox As Boolean)
-            MyBase.new(provider)
+        ''' <summary> Constructor </summary>
+        ''' <param name="provider"/>
+        ''' <param name="SupportToolbox"/>
+        Friend Sub New(
+                        provider As IServiceProvider,
+                        SupportToolbox As Boolean
+                      )
+            MyBase.New(provider)
             _supportToolbox = SupportToolbox
         End Sub
 
-        Public Overrides Function CreateWindowPane(surface As DesignSurface) As DesignerWindowPane
+        Public Overrides Function CreateWindowPane(
+                                                    surface As DesignSurface
+                                                  ) As DesignerWindowPane
             Return New DesignerWindowPaneBase(surface, _supportToolbox)
         End Function
 
@@ -66,13 +67,13 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             Private _supportToolbox As Boolean
 
 
-            ''' <summary>
-            ''' Creates a new WinformsWindowPane.
-            ''' </summary>
-            ''' <param name="surface"></param>
-            ''' <param name="SupportToolbox"></param>
-            ''' <remarks></remarks>
-            Public Sub New(surface As DesignSurface, SupportToolbox As Boolean)
+            ''' <summary> Creates a new WinformsWindowPane.</summary>
+            ''' <param name="surface"/>
+            ''' <param name="SupportToolbox"/>
+            Public Sub New(
+                            surface As DesignSurface,
+                            SupportToolbox As Boolean
+                          )
                 MyBase.New(surface)
 
                 _supportToolbox = SupportToolbox
@@ -82,18 +83,16 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
                 '// and use it for focus management!  It will steal key
                 '// events from the shell and royaly screw things up.
                 '//
-                _view = New TopLevelControl()
+                _view = New TopLevelControl() With
+                        {
+                          .BackColor = SystemColors.Window,
+                          .Name = "DesignerWindowPaneBase View",
+                          .Text = "DesignerWindowPaneBase View"
+                        }
                 AddHandler _view.GotFocus, AddressOf Me.OnViewFocus
-                _view.BackColor = SystemColors.Window
-
-                'For debugging purposes
-                _view.Name = "DesignerWindowPaneBase View"
-                _view.Text = "DesignerWindowPaneBase View"
 
                 _host = DirectCast(GetService(GetType(IDesignerHost)), IDesignerHost)
-                If _host IsNot Nothing AndAlso Not _host.Loading Then
-                    PopulateView()
-                End If
+                If _host IsNot Nothing AndAlso Not _host.Loading Then PopulateView()
 
                 AddHandler surface.Loaded, AddressOf Me.OnLoaded
                 AddHandler surface.Unloading, AddressOf Me.OnSurfaceUnloading
@@ -102,11 +101,7 @@ Namespace Microsoft.VisualStudio.Editors.DesignerFramework
             End Sub
 
 
-            ''' <summary>
-            ''' Returns the view control for the window pane.
-            ''' </summary>
-            ''' <value></value>
-            ''' <remarks></remarks>
+            ''' <summary> Returns the view control for the window pane. </summary>
             Protected ReadOnly Property View() As Control
                 Get
                     Return _view

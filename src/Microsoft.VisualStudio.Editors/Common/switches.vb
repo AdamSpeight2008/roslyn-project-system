@@ -222,7 +222,7 @@ Namespace Microsoft.VisualStudio.Editors.Common
 #End Region
 
 #Region "------------- MyExtensibility -------------"
-        Public Shared MyExtensibilityTraceSwitch As New TraceSwitch(NameOf(MyExtensibilityTrace), "Trace switch for MyExtensibility Feature")
+        Public Shared MyExtensibilityTraceSwitch As New TraceSwitch(NameOf(MyExtensibilityTraceSwitch), "Trace switch for MyExtensibility Feature")
 #End Region
 
         '--------------- Functions (optional, but make usage easier) ------------------
