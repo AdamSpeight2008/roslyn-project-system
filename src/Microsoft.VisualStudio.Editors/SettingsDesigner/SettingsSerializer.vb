@@ -6,31 +6,30 @@ Imports System.Xml
 Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
 
 
-    ''' <summary> Utility class to (de)serialize the contents of a DesignTimeSetting object given a stream reader/writer. </summary>
+    ''' <summary>
+    ''' Utility class to (de)serialize the contents of a DesignTimeSetting object
+    ''' given a stream reader/writer.
+    ''' </summary>
+    ''' <remarks></remarks>
     Friend NotInheritable Class SettingsSerializer
 
         Friend Class SettingsSerializerException
             Inherits ApplicationException
 
-            Public Sub New(
-                            message As String
-                          )
+            Public Sub New(ByVal message As String)
                 MyBase.New(message)
             End Sub
 
-            Public Sub New(
-                            message As String,
-                            inner As Exception
-                          )
+            Public Sub New(ByVal message As String, ByVal inner As Exception)
                 MyBase.New(message, inner)
             End Sub
         End Class
 
-        Public Const SettingsSchemaUri = "http://schemas.microsoft.com/VisualStudio/2004/01/settings"
-        Public Const SettingsSchemaUriOLD = "uri:settings"
+        Public Const SettingsSchemaUri As String = "http://schemas.microsoft.com/VisualStudio/2004/01/settings"
+        Public Const SettingsSchemaUriOLD As String = "uri:settings"
 
-        Public Const CultureInvariantVirtualTypeNameConnectionString = "(Connection string)"
-        Public Const CultureInvariantVirtualTypeNameWebReference = "(Web Service URL)"
+        Public Const CultureInvariantVirtualTypeNameConnectionString As String = "(Connection string)"
+        Public Const CultureInvariantVirtualTypeNameWebReference As String = "(Web Service URL)"
 
 #If USE_SETTINGS_XML_SCHEMA_VALIDATION Then
         ' We have disabled the schema validation for now - it caused perf problems for a couple of user scenarios
@@ -42,7 +41,11 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
         ' #define:ing USE_SETTINGS_XML_SCHEMA_VALIDATION will re-enable schema validation...
         Private Shared s_SchemaLoadFailed As Boolean = False
 
-        ''' <summary> Demand create an XML Schema instance for .settings files. </summary>
+        ''' <summary>
+        ''' Demand create an XML Schema instance for .settings files.
+        ''' </summary>
+        ''' <value></value>
+        ''' <remarks></remarks>
         Private Shared ReadOnly Property Schema() As System.Xml.Schema.XmlSchema
             Get
                 Static schemaInstance As System.Xml.Schema.XmlSchema
@@ -55,15 +58,20 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
             End Get
         End Property
 
-        ''' <summary> If we fail to load the schema, things are bad indeed... </summary>
-        ''' <param name="sender"/>
-        ''' <param name="e"/>
-        Private Shared Sub SchemaValidationEventHandler(sender As Object, e As System.Xml.Schema.ValidationEventArgs)
+        ''' <summary>
+        ''' If we fail to load the schema, things are bad indeed...
+        ''' </summary>
+        ''' <param name="sender"></param>
+        ''' <param name="e"></param>
+        Private Shared Sub SchemaValidationEventHandler(ByVal sender As Object, ByVal e As System.Xml.Schema.ValidationEventArgs)
             System.Diagnostics.Debug.Fail("Failed to load XML schema from manifest resource stream!")
             s_SchemaLoadFailed = True
         End Sub
 
-        ''' <summary> Stores all validation errors from a ValidatingReader. </summary>
+        ''' <summary>
+        ''' Stores all validation errors from a ValidatingReader.
+        ''' </summary>
+        ''' <remarks></remarks>
         Private Class ValidationErrorBag
             Private m_ValidationErrors As New System.Collections.ArrayList
 
@@ -73,20 +81,18 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
                 End Get
             End Property
 
-            Friend Sub ValidationEventHandler(sender As Object, e As System.Xml.Schema.ValidationEventArgs)
+            Friend Sub ValidationEventHandler(ByVal sender As Object, ByVal e As System.Xml.Schema.ValidationEventArgs)
                 m_ValidationErrors.Add(e)
             End Sub
         End Class
 #End If
 
-        ''' <summary> Deserialize XML stream of settings. </summary>
+        ''' <summary>
+        '''  Deserialize XML stream of settings.
+        ''' </summary>
         ''' <param name="Settings">Instance to populate</param>
         ''' <param name="Reader">Text reader on stream containing serialized settings</param>
-        Public Shared Sub Deserialize(
-                                       Settings As DesignTimeSettings,
-                                       Reader As TextReader,
-                                       getRuntimeValue As Boolean
-                                     )
+        Public Shared Sub Deserialize(ByVal Settings As DesignTimeSettings, ByVal Reader As TextReader, ByVal getRuntimeValue As Boolean)
             Dim XmlDoc2 As Linq.XNode
 
 #If USE_SETTINGS_XML_SCHEMA_VALIDATION Then
@@ -208,7 +214,7 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
             Common.Switches.TraceSDSerializeSettings(TraceLevel.Info, "Deserialized {0} settings", Settings.Count)
         End Sub
 
-        Private Shared Function MakeSetting_Inner(Instance As DesignTimeSettingInstance) As Linq.XElement
+        Private Shared Function MakeSetting_Inner(ByVal Instance As DesignTimeSettingInstance) As Linq.XElement
             Dim output = <Tmp></Tmp>
             Dim designTimeValue As String = Nothing
             Dim defaultValue As String
@@ -237,7 +243,7 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
             Return output
         End Function
 
-        Private Shared Function MakeSetting(Instance As DesignTimeSettingInstance) As Linq.XElement
+        Private Shared Function MakeSetting(ByVal Instance As DesignTimeSettingInstance) As Linq.XElement
             Return <Setting Name=<%= Instance.Name %>
                        Description=<%= If(Instance.Description <> "", Instance.Description, Nothing) %>
                        Provider=<%= If(Instance.Provider <> "", Instance.Provider, Nothing) %>
@@ -249,16 +255,12 @@ Namespace Microsoft.VisualStudio.Editors.SettingsDesigner
                    </Setting>
         End Function
 
-        ''' <summary> Serialize design time settings instance. </summary>
+        ''' <summary>
+        ''' Serialize design time settings instance.
+        ''' </summary>
         ''' <param name="Settings">Instance to serialize</param>
         ''' <param name="Writer">Text writer on stream to serialize settings to</param>
-        Public Shared Sub Serialize(
-                                     Settings As DesignTimeSettings,
-                                     GeneratedClassNameSpace As String,
-                                     ClassName As String,
-                                     Writer As TextWriter,
-                                     DeclareEncodingAs As System.Text.Encoding
-                                   )
+        Public Shared Sub Serialize(ByVal Settings As DesignTimeSettings, ByVal GeneratedClassNameSpace As String, ByVal ClassName As String, ByVal Writer As TextWriter, ByVal DeclareEncodingAs As System.Text.Encoding)
 
             Common.Switches.TraceSDSerializeSettings(TraceLevel.Info, "Serializing {0} settings", Settings.Count)
 
